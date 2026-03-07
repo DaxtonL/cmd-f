@@ -26,10 +26,13 @@ class bomb{
         }
 
         // if the wire is not cut, cut it
-        void cutWire(string color) {
+        // returns true if there is a wire to cuts
+        bool cutWire(string color) {
             if (wires.find(color) != wires.end()) {
                 wires[color] = true;
+                return true;
             }
+            return false;
         }
 
         // switches value of toggle if it exists
@@ -63,6 +66,13 @@ class bomb{
 
         vector<string> getPassword() {
             return password;
+        }
+
+        void resetButtons() {
+            for (auto& pair : buttons) {
+                pair.second = false;
+            }
+            password.clear();
         }
 
     private:
