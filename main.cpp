@@ -27,12 +27,37 @@ void printInfo(bomb b) {
 }
 
 int main() {
+    bool run = true;
     vector<string> colors = {"red", "blue", "green"};
     vector<string> labels = {"hot", "explode", "on"};
     vector<string> keys = {"A", "B", "C", "D"};
     map<string, bool> rules;
     bomb b(colors, labels, keys, rules);
     printInfo(b);
+    while (run) {
+        string input;
+        cout << "Input action: " << endl;
+        getline(cin, input);
+        system("clear");
+        if (input == "exit") {
+            run = false;
+            break;
+        } else if (input == "cut") {
+            cout << "What wire do you want to cut" << endl;
+            getline(cin, input);
+            b.cutWire(input);
+        } else if (input == "flip") {
+            cout << "What toggle do you want to flip" << endl;
+            getline(cin, input);
+            b.flipToggle(input);
+        } else if (input == "press") {
+            cout << "What button do you want to press" << endl;
+            getline(cin, input);
+            b.pressButton(input);
+        }
+        printInfo(b);
+        cout << endl;
+    }
     return 0;
 }
 
