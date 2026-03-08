@@ -24,7 +24,9 @@ public:
     bool handle_events();
     void update(game_master *state);
 
-    private : bomb current_bomb;
+    private : 
+    
+    bomb current_bomb;
     solution current_solution;
 
     int timer;

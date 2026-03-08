@@ -31,6 +31,7 @@
 #include "bomb.h"
 
 #include <chrono>
+#include <iostream>
 
 using namespace std::chrono_literals;
 
@@ -38,17 +39,7 @@ using namespace std::chrono_literals;
 constexpr std::chrono::nanoseconds timestep(16ms);
 
 game_master::game_master()
-{
-    // this contains the state of your game, such as positions and velocities
-    int timer;
-    bomb current_bomb;
-    solution current_solution;
-    int num_players;
-    bool exploded;
-    bool defused;
-    bool running;
-    start_time = std::chrono::steady_clock::now();
-};
+{};
 
 void game_master::innit(int t)
 {
@@ -69,7 +60,6 @@ bool game_master::handle_events()
 void game_master::update(game_master *state)
 {
     // update game logic here
-    auto elapsed = std::chrono::steady_clock::now() - start_time;
 }
 
 
@@ -90,7 +80,6 @@ void game_master::render(game_master const &state)
 void game_master::run()
 {
     using clock = std::chrono::high_resolution_clock;
-
     std::chrono::nanoseconds lag(0ns);
     auto time_start = clock::now();
     bool quit_game = false;
