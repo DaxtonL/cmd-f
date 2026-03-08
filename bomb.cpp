@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include "wire.cpp"
 using namespace std;
 
 
@@ -11,7 +12,9 @@ class bomb{
         // and a map of "facts"
         bomb(vector<string> colors, vector<string> labels, vector<string> keys, map<string, bool> facts_) {
             for (int i = 0; i < colors.size(); i++) {
-                wires[colors[i]] = false;
+                wire w;
+                w.setColor(colors[i]);
+                wires.push_back(w);
             }
 
             for (int i = 0; i < labels.size(); i++) {
@@ -27,9 +30,9 @@ class bomb{
 
         // if the wire is not cut, cut it
         // returns true if there is a wire to cuts
-        bool cutWire(string color) {
-            if (wires.find(color) != wires.end()) {
-                wires[color] = true;
+        bool cutWire(int n) {
+            if (n < wires.size()) {
+                wires[n].cutWire();
                 return true;
             }
             return false;
@@ -52,7 +55,7 @@ class bomb{
             }
         }
 
-        map<string, bool> getWires() {
+        vector<wire> getWires() {
             return wires;
         }
 
@@ -75,8 +78,17 @@ class bomb{
             password.clear();
         }
 
+        bool compareWires(vector<bool> solution) {
+            for (int i = 0; i < solution.size(); i++) {
+                if (wires[i].getIscut() != solution[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
     private:
-        map<string, bool> wires;        // true = wire is cut
+        vector<wire> wires;
         map<string, bool> toggles;      
         map<string, bool> buttons;      // true = pressed
         map<string, bool> facts;

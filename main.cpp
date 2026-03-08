@@ -6,12 +6,13 @@
 using namespace std;
 
 void printInfo(bomb b) {
-    map<string, bool> wires = b.getWires();
+    vector<wire> wires = b.getWires();
     map<string, bool> toggles = b.getToggles();
     map<string, bool> buttons = b.getButtons();
     vector<string> password = b.getPassword();
-    for (const auto& [key, value] : wires) {
-        cout << key << " cut: " << boolalpha << value << endl;
+    for (int i = 0; i < wires.size(); i++) {
+        wire w = b.getWires()[i];
+        cout << "Wire " << i << " " << w.getColor() << " cut:" << w.getIscut() << endl; 
     }
     cout << endl;
     for (const auto& [key, value] : toggles) {
@@ -37,7 +38,7 @@ int main() {
     map<string, bool> rules;
     bomb b(colors, labels, keys, rules);
 
-    map<string, bool> wire_solution = {{"red", true}, {"blue", false}, {"green", false}};
+    vector<bool> wire_solution = {true, false, false};
     map<string, bool> toggle_solution = {{"hot", true}, {"explode", true}, {"on", false}};
     vector<string> password_solution = { "1", "2", "3", "4"};
 
@@ -53,8 +54,8 @@ int main() {
         } else if (input == "cut") {
             cout << "What wire do you want to cut" << endl;
             getline(cin, input);
-            if (b.cutWire(input)) {
-                if (wire_solution[input] == false) {
+            if (b.cutWire(stoi(input))) {
+                if (wire_solution[stoi(input)] == false) {
                     system("clear");
                     cout << "BOOM" << endl;
                     run = false;
@@ -75,7 +76,7 @@ int main() {
                 }
             }
         }
-        bool wires_s = (b.getWires() == wire_solution);
+        bool wires_s = b.compareWires(wire_solution);
         bool toggles_s = (b.getToggles() == toggle_solution);
         bool password_s = (b.getPassword() == password_solution);
         if (wires_s && toggles_s && password_s) {
