@@ -5,7 +5,7 @@ void solution::generate_solution(bomb b, int n) {
     vector<wire> wires = b.getWires();
     toggle_solution = b.getToggles();
     wire_solution.clear();
-    for (int i = 0; i < wires.size(); i++) {
+    for (int i = 0; i < (int)wires.size(); i++) {
         pair<wire, bool> w = {wires[i], false};
         wire_solution.push_back(w);
     }
@@ -88,7 +88,7 @@ void solution::toggleRule(bomb b, mt19937 gen) {
 
 void solution::cutAllRule(bomb b) {
     string s = pickColor(b.getWires());
-    for (int i = 0; i < wire_solution.size(); i++) {
+    for (int i = 0; i < (int)wire_solution.size(); i++) {
         if (wire_solution[i].first.getColor() == s) {
             if (wire_solution[i].second != true) {
                 wire_solution[i].first.cutWire();
@@ -120,7 +120,7 @@ void solution::passwordRule(bomb b, mt19937 gen) {
     shuffle(pass.begin(), pass.end(), gen);
     s = "Password is: ";
     password_solution = pass;
-    for (int i = 0; i < password_solution.size(); i++) {
+    for (int i = 0; i < (int)password_solution.size(); i++) {
         s.append(password_solution[i]);
     }
     rules.push_back(s);
@@ -129,7 +129,7 @@ void solution::passwordRule(bomb b, mt19937 gen) {
 
 vector<bool> solution::getWireSolution() {
     vector<bool> wires;
-    for (int i = 0; i < wire_solution.size(); i++) {
+    for (int i = 0; i < (int)wire_solution.size(); i++) {
         wires.push_back(wire_solution[i].first.getIscut());
     }
     return wires;
@@ -147,7 +147,7 @@ vector<string> solution::getPassword() {
 int solution::findWire() {
     vector<int> valid_wires;
     // Searches for valid wires
-    for (int i = 0; i < wire_solution.size(); i++) {
+    for (int i = 0; i < (int)wire_solution.size(); i++) {
         pair<wire,bool> w = wire_solution[i];
         if (w.first.getIscut() == false && w.second == false) {
             valid_wires.push_back(i);
@@ -167,7 +167,7 @@ int solution::findWire() {
 
 string solution::pickColor(vector<wire> wires) {
     vector<string> colors;
-    for (int i = 0; i < wires.size(); i++) {
+    for (int i = 0; i < (int)wires.size(); i++) {
         colors.push_back(wires[i].getColor());
     }
     mt19937 gen(std::random_device{}());
@@ -184,7 +184,7 @@ bool solution::bombIsDefused(bomb b) {
 
 bool solution::bombIsDetonated(bomb b) {
     vector<wire> wires = b.getWires();
-    for (int i = 0; i < wires.size(); i++) {
+    for (int i = 0; i < (int)wires.size(); i++) {
         if (wires[i].getIscut() == true && getWireSolution()[i] == false) {
             return true;
             // you cut something you shouldn't have
