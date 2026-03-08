@@ -12,7 +12,7 @@ export default function HomeScreen() {
   const [hardMode, setHardMode] = useState(false);
 
   const handleStartGame = async () => {
-    const timer = hardMode ? 120 : 180;
+    const timer = 60; // start 1 minute
     try {
       await initGame(timer, numPlayers, gameMode);
       router.push('/player-rules');

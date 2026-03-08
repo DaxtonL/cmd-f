@@ -1,26 +1,11 @@
-import React, { useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, Animated } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useGame } from '../contexts/GameContext';
 
 export default function GameScreen() {
   const router = useRouter();
   const { gameState, cutWire, flipToggle, pressButton, resetPassword, remainingTime, totalTime } = useGame();
-
-  // Animated rotation value updated when remainingTime changes
-  const rotation = useMemo(() => new Animated.Value(0), []);
-  useEffect(() => {
-    // compute angle: start at 0deg (top) and move clockwise proportionally
-    const tot = totalTime || 180;
-    const rem = Math.max(0, remainingTime);
-    const progress = 1 - rem / tot; // 0 -> start, 1 -> end
-    const angle = progress * 360;
-    Animated.timing(rotation, {
-      toValue: angle,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }, [remainingTime, totalTime]);
 
   useEffect(() => {
     // if no game running, go back to home
@@ -52,24 +37,13 @@ export default function GameScreen() {
     return `${mm}:${ss}`;
   };
 
-  // rotation interpolation to transform string
-  const rotateInterpolate = rotation.interpolate({
-    inputRange: [0, 360],
-    outputRange: ['0deg', '360deg'],
-  });
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bomb Console</Text>
 
+      {/* Numeric timer display */}
       <View style={styles.timerRow}>
-        <View style={styles.analogWrap}>
-          <View style={styles.analogFace}>
-            <Animated.View style={[styles.hand, { transform: [{ rotate: rotateInterpolate }] }]} />
-            <View style={styles.centerDot} />
-          </View>
-          <Text style={styles.timerText}>{mmss()}</Text>
-        </View>
+        <Text style={styles.bigTimer}>{mmss()}</Text>
       </View>
 
       <View style={styles.section}>
@@ -152,34 +126,7 @@ const styles = StyleSheet.create({
   title: { color: '#fff', fontSize: 20, fontWeight: '700', marginBottom: 12 },
 
   timerRow: { marginBottom: 16, alignItems: 'center' },
-  analogWrap: { alignItems: 'center' },
-  analogFace: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: '#222',
-    borderWidth: 6,
-    borderColor: '#333',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hand: {
-    position: 'absolute',
-    width: 4,
-    height: 60,
-    backgroundColor: RED,
-    top: 10, // pivot near center-top
-    left: 68 - 2, // center horizontally (face 140 -> center 70, -half width)
-    borderRadius: 2,
-  },
-  centerDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#fff',
-    position: 'absolute',
-  },
-  timerText: { color: '#fff', marginTop: 8, fontWeight: '700' },
+  bigTimer: { color: '#fff', fontSize: 48, fontWeight: '800' },
 
   section: { marginBottom: 18, backgroundColor: '#161616', padding: 12, borderRadius: 12 },
   sectionTitle: { color: '#ddd', fontSize: 14, fontWeight: '700', marginBottom: 10 },
