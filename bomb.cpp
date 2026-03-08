@@ -3,6 +3,13 @@
 // creates a new bomb
 // takes in a list of colors, labels, and keys for elements
 // and a map of "facts"
+bomb::bomb() {
+    wires = {};
+    toggles = {};
+    buttons = {};
+    password = {};
+    facts = {};
+}
 bomb::bomb(vector<string> colors, vector<string> labels, vector<string> keys, map<string, bool> facts_) {
     for (int i = 0; i < colors.size(); i++) {
         wire w;
