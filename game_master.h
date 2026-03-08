@@ -41,20 +41,6 @@ public:
 
     void run();
 
-
-    void setupGame();
-    void printInfo() const;
-    void printRules() const;
-
-    void update();
-    bool isGameOver() const;
-    void run();
-    void render();
-    bool handle_events();
-    void update(game_master *state);
-    vector<player> make_players(int n);
-    void getRules();
-
 private:
 
     bomb current_bomb;
