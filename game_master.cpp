@@ -47,6 +47,7 @@ game_master::game_master()
     bool exploded;
     bool defused;
     bool running;
+    start_time = std::chrono::steady_clock::now();
 };
 
 void game_master::innit(int t)
@@ -68,13 +69,7 @@ bool game_master::handle_events()
 void game_master::update(game_master *state)
 {
     // update game logic here
-    if (exploded) {
-        running = false;
-    } 
-    if (defused) {
-        running = false;
-    }
-
+    auto elapsed = std::chrono::steady_clock::now() - start_time;
 }
 
 
