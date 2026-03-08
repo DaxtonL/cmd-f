@@ -94,9 +94,9 @@ int solution::findWire() {
         }
     }
 
-    random_device rd;                   // 1
-    mt19937 gen(rd());                  // 2
-    uniform_int_distribution<> dist(0, wires.size()-1); // 3
+    random_device rd;                                    // 1
+    mt19937 gen(rd());                                   // 2
+    uniform_int_distribution<> dist(0, wires.size()-1);  // 3
     int z = dist(gen);
     return wires[z];
 }
