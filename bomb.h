@@ -10,6 +10,7 @@ class bomb{
         // creates a new bomb
         // takes in a list of colors, labels, and keys for elements
         // and a map of "facts"
+        bomb();
         bomb(vector<string> colors, vector<string> labels, vector<string> keys, map<string, bool> facts_);
 
         // if the wire is not cut, cut it
