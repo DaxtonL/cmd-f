@@ -22,11 +22,13 @@
  * SOFTWARE.
  */
 
+#pragma once
 #include <vector>
 #include <string>
 #include <map>
-#include "player.cpp"
+#include "player.h"
 #include "game_master.h"
+#include "bomb.h"
 
 #include <chrono>
 
@@ -38,13 +40,22 @@ constexpr std::chrono::nanoseconds timestep(16ms);
 game_master::game_master()
 {
     // this contains the state of your game, such as positions and velocities
-    int timer; 
+    int timer;
+    bomb current_bomb;
+    solution current_solution;
+    int num_players;
+    bool exploded;
+    bool defused;
+    bool running;
 };
 
-game_master::game_master(int t)
+void game_master::innit(int t)
 {
     // this contains the state of your game, such as positions and velocities
     int timer = t; 
+    bomb current_bomb();
+    solution current_solution(current_bomb, num_players);
+
 };
 
 bool game_master::handle_events()
@@ -57,7 +68,15 @@ bool game_master::handle_events()
 void game_master::update(game_master *state)
 {
     // update game logic here
+    if (exploded) {
+        running = false;
+    } 
+    if (defused) {
+        running = false;
+    }
+
 }
+
 
 void game_master::render(game_master const &state)
 {
@@ -73,7 +92,7 @@ void game_master::render(game_master const &state)
 //     return interpolated_state;
 // }
 
-int game_master::main()
+void game_master::run()
 {
     using clock = std::chrono::high_resolution_clock;
 

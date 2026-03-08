@@ -2,22 +2,37 @@
 #include <vector>
 #include <string>
 #include <map>
-#include "player.cpp"
+#include "bomb.h"
+#include "solution.h"
+#include "player.h"
 
-using namespace std::chrono_literals;
+using namespace std;
 
-struct game_master
-{
-    // this contains the state of your game, such as positions and velocities
-    game_master(int t);
+class game_master {
+public:
     game_master();
+    void innit(int t);
 
-    // poll for events
+    void setupGame();
+    void printInfo() const;
+    void printRules() const;
+
+    void update();
+    bool isGameOver() const;
+    void run();
+    void render(game_master const &state);
     bool handle_events();
-
     void update(game_master *state);
 
-    void render(game_master const &state);
+    private : bomb current_bomb;
+    solution current_solution;
 
-    int main();
+    int timer;
+    bool exploded;
+    bool defused;
+    bool running;
+
+    vector<bool> wire_solution;
+    map<string, bool> toggle_solution;
+    vector<string> password_solution;
 };
