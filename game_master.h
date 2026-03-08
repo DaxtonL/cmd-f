@@ -11,7 +11,7 @@ using namespace std;
 class game_master {
 public:
     game_master();
-    void innit(int t);
+    void innit(int t, int n);
 
     void setupGame();
     void printInfo() const;
@@ -26,7 +26,7 @@ public:
 
     private : 
     
-    bomb current_bomb = bomb();
+    bomb current_bomb;
     solution current_solution;
 
     int timer = 0;

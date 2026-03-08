@@ -41,12 +41,20 @@ constexpr std::chrono::nanoseconds timestep(16ms);
 game_master::game_master()
 {};
 
-void game_master::innit(int t)
+void game_master::innit(int t, int n)
 {
     // this contains the state of your game, such as positions and velocities
     int timer = t;
+    int num_players = n; 
+    current_bomb = make_bomb();
     current_solution.generate_solution(current_bomb, num_players);
 };
+
+bomb make_bomb() {
+    bomb b;
+    b = bomb(4, 3, 4);
+    return b;
+}
 
 bool game_master::handle_events()
 {
@@ -58,12 +66,15 @@ bool game_master::handle_events()
 void game_master::update(game_master *state)
 {
     // update game logic here
+    defused = current_solution.bombIsDefused(current_bomb);
+    exploded = current_solution.bombIsDetonated(current_bomb);
 }
 
 
 void game_master::render(game_master const &state)
 {
     // render stuff here
+
 }
 
 // game_master interpolate(game_master const &current, game_master const &previous, float alpha)
