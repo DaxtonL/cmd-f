@@ -3,6 +3,7 @@
 
 void solution::generate_solution(bomb b, int n) {
     vector<wire> wires = b.getWires();
+    toggle_solution = b.getToggles();
     wire_solution.clear();
     for (int i = 0; i < wires.size(); i++) {
         pair<wire, bool> w = {wires[i], false};
@@ -56,13 +57,8 @@ void solution::generate_solution(bomb b, int n) {
             break;
         case 3:
             s = getToggle(b.getToggles());
-            if (n%2 == 0) {
-                toggle_solution[s] = true;
-                s.append(" should be on");
-            } else {
-                toggle_solution[s] = false;
-                s.append(" should be off");
-            }
+            toggle_solution[s] = true;
+            s.append(" should be on");
             rules.push_back(s);
             n--;
             break;
@@ -124,4 +120,22 @@ string solution::pickColor(vector<string> colors) {
 
 map<string, bool> solution::getToggleSolution() {
     return toggle_solution;
+}
+
+bool solution::bombIsDefused(bomb b) {
+    bool wire_s = b.compareWires(getWireSolution());
+    bool toggles_s = (b.getToggles() == getToggleSolution());
+    bool password_s = (b.getPassword() == getPassword());
+    return wire_s && toggles_s && password_s;
+}
+
+bool solution::bombIsDetonated(bomb b) {
+    vector<wire> wires = b.getWires();
+    for (int i = 0; i < wires.size(); i++) {
+        if (wires[i].getIscut() == true && getWireSolution()[i] == false) {
+            return true;
+            // you cut something you shouldn't have
+        }
+    }
+    return false;
 }

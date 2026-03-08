@@ -65,14 +65,7 @@ int main() {
         } else if (input == "cut") {
             cout << "What wire do you want to cut" << endl;
             getline(cin, input);
-            if (b.cutWire(stoi(input))) {
-                if (wire_solution[stoi(input)] == false) {
-                    system("clear");
-                    cout << "BOOM" << endl;
-                    run = false;
-                    break;
-                }
-            }
+            b.cutWire(stoi(input));
         } else if (input == "flip") {
             cout << "What toggle do you want to flip" << endl;
             getline(cin, input);
@@ -89,10 +82,11 @@ int main() {
         } else if (input == "rules") {
             printRules(s.getRules());
         }
-        bool wires_s = b.compareWires(wire_solution);
-        bool toggles_s = (b.getToggles() == toggle_solution);
-        bool password_s = (b.getPassword() == password_solution);
-        if (wires_s && toggles_s && password_s) {
+        if (s.bombIsDetonated(b)) {
+            cout << "BOOM" << endl;
+            break;
+        }
+        if (s.bombIsDefused(b)) {
             cout << "Bomb defused!" << endl;
             run = false;
             break;

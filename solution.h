@@ -18,6 +18,10 @@ class solution {
         vector<string> getPassword();
         map<string, bool> getToggleSolution();
 
+        bool bombIsDefused(bomb b);
+
+        bool bombIsDetonated(bomb b);
+
 
     private:
         // returns a changeable wire that hasn't been cut
