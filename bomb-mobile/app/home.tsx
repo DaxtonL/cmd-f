@@ -10,12 +10,14 @@ export default function HomeScreen() {
   const [numPlayers, setNumPlayers] = useState(2);
   const [hardMode, setHardMode] = useState(false);
 
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
     const timer = hardMode ? 120 : 180;
-    initGame(timer, numPlayers, gameMode);
-    // TODO: Navigate to player-rules or game screen
-    // router.push('/player-rules');
-    alert(`Game started! ${numPlayers} player${numPlayers > 1 ? 's' : ''}, ${hardMode ? 'HARD' : 'EASY'} mode`);
+    try {
+      await initGame(timer, numPlayers, gameMode);
+      router.push('/game');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to start game');
+    }
   };
 
   const decrementPlayers = () => {

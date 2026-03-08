@@ -1,10 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useState, ReactNode } from 'react';
 
-interface Wire {
-  id: number;
-  color: string;
-  cut: boolean;
-}
+import { BackendGameState, gameApi, Wire } from '../lib/gameApi';
 
 interface GameState {
   timer: number;
@@ -15,7 +11,7 @@ interface GameState {
   buttons: { [key: string]: boolean };
   password: string[];
   rules: string[];
-  players: Array<{ name: string; rules: string[] }>;
+  players: { name: string; rules: string[] }[];
   exploded: boolean;
   defused: boolean;
   running: boolean;
@@ -23,19 +19,37 @@ interface GameState {
 
 interface GameContextType {
   gameState: GameState;
-  initGame: (timer: number, numPlayers: number, gameMode: 'classic' | 'online') => void;
-  cutWire: (index: number) => void;
-  flipToggle: (label: string) => void;
-  pressButton: (key: string) => void;
-  resetPassword: () => void;
+  initGame: (timer: number, numPlayers: number, gameMode: 'classic' | 'online') => Promise<void>;
+  cutWire: (index: number) => Promise<void>;
+  flipToggle: (label: string) => Promise<void>;
+  pressButton: (key: string) => Promise<void>;
+  resetPassword: () => Promise<void>;
+  refreshState: () => Promise<void>;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
+function toGameState(prev: GameState, backend: BackendGameState): GameState {
+  return {
+    ...prev,
+    timer: backend.timer,
+    numPlayers: backend.numPlayers,
+    wires: backend.wires,
+    toggles: backend.toggles,
+    buttons: backend.buttons,
+    password: backend.password,
+    rules: backend.rules,
+    players: backend.players,
+    exploded: backend.exploded,
+    defused: backend.defused,
+    running: backend.running,
+  };
+}
+
 export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, setGameState] = useState<GameState>({
     timer: 180,
-    numPlayers: 1,
+    numPlayers: 2,
     gameMode: 'classic',
     wires: [],
     toggles: {},
@@ -48,75 +62,41 @@ export function GameProvider({ children }: { children: ReactNode }) {
     running: false,
   });
 
-  const initGame = (timer: number, numPlayers: number, gameMode: 'classic' | 'online') => {
-    const colors = ['red', 'blue', 'green', 'yellow'];
-    const wires = Array.from({ length: 4 }, (_, i) => ({
-      id: i,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      cut: false,
-    }));
-
-    const rules: string[] = [];
-    for (let i = 0; i < numPlayers * 2; i++) {
-      rules.push(`Rule ${i + 1} for game`);
-    }
-
-    const players = Array.from({ length: numPlayers }, (_, i) => ({
-      name: `Player ${i + 1}`,
-      rules: [rules[i * 2] || '', rules[i * 2 + 1] || ''],
-    }));
-
-    setGameState({
-      timer,
-      numPlayers,
+  const initGame = useCallback(async (timer: number, numPlayers: number, gameMode: 'classic' | 'online') => {
+    const backend = await gameApi.init(timer, numPlayers);
+    setGameState((prev) => ({
+      ...toGameState(prev, backend),
       gameMode,
-      wires,
-      toggles: { explode: false, hot: false, on: false },
-      buttons: { '1': false, '2': false, '3': false, '4': false },
-      password: [],
-      rules,
-      players,
-      exploded: false,
-      defused: false,
-      running: true,
-    });
-  };
-
-  const cutWire = (index: number) => {
-    setGameState(prev => ({
-      ...prev,
-      wires: prev.wires.map(w => w.id === index ? { ...w, cut: true } : w),
     }));
-  };
+  }, []);
 
-  const flipToggle = (label: string) => {
-    setGameState(prev => ({
-      ...prev,
-      toggles: { ...prev.toggles, [label]: !prev.toggles[label] },
-    }));
-  };
+  const refreshState = useCallback(async () => {
+    const backend = await gameApi.state();
+    setGameState((prev) => toGameState(prev, backend));
+  }, []);
 
-  const pressButton = (key: string) => {
-    setGameState(prev => {
-      if (prev.buttons[key] || prev.password.length >= 4) return prev;
-      return {
-        ...prev,
-        password: [...prev.password, key],
-        buttons: { ...prev.buttons, [key]: true },
-      };
-    });
-  };
+  const cutWire = useCallback(async (index: number) => {
+    const backend = await gameApi.cutWire(index);
+    setGameState((prev) => toGameState(prev, backend));
+  }, []);
 
-  const resetPassword = () => {
-    setGameState(prev => ({
-      ...prev,
-      password: [],
-      buttons: { '1': false, '2': false, '3': false, '4': false },
-    }));
-  };
+  const flipToggle = useCallback(async (label: string) => {
+    const backend = await gameApi.flipToggle(label);
+    setGameState((prev) => toGameState(prev, backend));
+  }, []);
+
+  const pressButton = useCallback(async (key: string) => {
+    const backend = await gameApi.pressButton(key);
+    setGameState((prev) => toGameState(prev, backend));
+  }, []);
+
+  const resetPassword = useCallback(async () => {
+    const backend = await gameApi.resetPassword();
+    setGameState((prev) => toGameState(prev, backend));
+  }, []);
 
   return (
-    <GameContext.Provider value={{ gameState, initGame, cutWire, flipToggle, pressButton, resetPassword }}>
+    <GameContext.Provider value={{ gameState, initGame, cutWire, flipToggle, pressButton, resetPassword, refreshState }}>
       {children}
     </GameContext.Provider>
   );
@@ -124,6 +104,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
 export function useGame() {
   const context = useContext(GameContext);
-  if (!context) throw new Error('useGame must be used within GameProvider');
+  if (!context) {
+    throw new Error('useGame must be used within GameProvider');
+  }
   return context;
 }

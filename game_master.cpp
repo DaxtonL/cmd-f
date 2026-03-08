@@ -1,122 +1,119 @@
-/*
- * The MIT License (MIT)
- *
- * Copyright (c) 2016 Mario Badr
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-#pragma once
-#include <vector>
-#include <string>
-#include <map>
-#include <chrono>
-#include <iostream>
-#include "player.h"
 #include "game_master.h"
-#include "bomb.h"
 
-#include <chrono>
-#include <iostream>
+#include <algorithm>
 
-using namespace std::chrono_literals;
-
-// we use a fixed timestep of 1 / (60 fps) = 16 milliseconds
-constexpr std::chrono::nanoseconds timestep(16ms);
-
-game_master::game_master()
-{};
-
-void game_master::innit(int t, int n)
-{
-    // this contains the state of your game, such as positions and velocities
-    int timer = t;
-    int num_players = n; 
-    current_bomb = make_bomb();
-    current_solution.generate_solution(current_bomb, num_players);
-};
-
+namespace {
 bomb make_bomb() {
-    bomb b;
-    b = bomb(4, 3, 4);
-    return b;
+    return bomb(5, 3, 4);
+}
 }
 
-bool game_master::handle_events()
-{
-    // poll for events
+game_master::game_master() = default;
 
-    return false; // true if the user wants to quit the game
+void game_master::innit(int t, int n) {
+    timer = t;
+    num_players = max(1, n);
+
+    current_bomb = make_bomb();
+    current_solution = solution();
+    current_solution.generate_solution(current_bomb, num_players);
+
+    rules = current_solution.getRules();
+    players = make_players(num_players, rules);
+
+    exploded = false;
+    defused = false;
+    running = true;
+
+    update();
 }
 
-void game_master::update(game_master *state)
-{
-    // update game logic here
+bool game_master::cutWire(int index) {
+    bool ok = current_bomb.cutWire(index);
+    if (ok) {
+        update();
+    }
+    return ok;
+}
+
+void game_master::flipToggle(const string& label) {
+    current_bomb.flipToggle(label);
+    update();
+}
+
+void game_master::pressButton(const string& key) {
+    current_bomb.pressButton(key);
+    update();
+}
+
+void game_master::resetPassword() {
+    current_bomb.resetButtons();
+    update();
+}
+
+void game_master::update() {
+    if (current_solution.checkResetPassword(current_bomb)) {
+        current_bomb.resetButtons();
+    }
+
     defused = current_solution.bombIsDefused(current_bomb);
     exploded = current_solution.bombIsDetonated(current_bomb);
+    running = !isGameOver();
 }
 
-
-void game_master::render(game_master const &state)
-{
-    // render stuff here
-
+bool game_master::isGameOver() const {
+    return exploded || defused || timer <= 0;
 }
 
-// game_master interpolate(game_master const &current, game_master const &previous, float alpha)
-// {
-//     game_master interpolated_state;
+bool game_master::isDefused() const {
+    return defused;
+}
 
-//     // interpolate between previous and current by alpha here
+bool game_master::isExploded() const {
+    return exploded;
+}
 
-//     return interpolated_state;
-// }
+int game_master::getTimer() const {
+    return timer;
+}
 
-void game_master::run()
-{
-    using clock = std::chrono::high_resolution_clock;
-    std::chrono::nanoseconds lag(0ns);
-    auto time_start = clock::now();
-    bool quit_game = false;
+int game_master::getNumPlayers() const {
+    return num_players;
+}
 
-    game_master current_state;
-    game_master previous_state;
-    // test
+bomb game_master::getBomb() const {
+    return current_bomb;
+}
 
-    while (!quit_game)
-    {
-        auto delta_time = clock::now() - time_start;
-        time_start = clock::now();
-        lag += std::chrono::duration_cast<std::chrono::nanoseconds>(delta_time);
+vector<player> game_master::getPlayers() const {
+    return players;
+}
 
-        quit_game = handle_events();
+vector<string> game_master::getRules() const {
+    return rules;
+}
 
-        // update game logic as lag permits
-        while (lag >= timestep)
-        {
-            lag -= timestep;
+vector<player> game_master::make_players(int n, const vector<string>& rule_list) const {
+    vector<player> result;
+    result.reserve(static_cast<size_t>(n));
 
-            previous_state = current_state;
-            update(&current_state); // update at a fixed rate each time
+    for (int i = 0; i < n; i++) {
+        vector<string> player_rules;
+        int first_rule = i * 2;
+        int second_rule = first_rule + 1;
+
+        if (first_rule < static_cast<int>(rule_list.size())) {
+            player_rules.push_back(rule_list[first_rule]);
+        }
+        if (second_rule < static_cast<int>(rule_list.size())) {
+            player_rules.push_back(rule_list[second_rule]);
+        }
+        if (player_rules.empty()) {
+            player_rules.push_back("No rule assigned");
         }
 
-        // calculate how close or far we are from the next timestep
-        auto alpha = (float)lag.count() / timestep.count();
+        result.emplace_back("Player " + to_string(i + 1), player_rules);
     }
+
+    return result;
 }
