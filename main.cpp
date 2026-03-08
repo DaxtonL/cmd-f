@@ -33,7 +33,7 @@ void printInfo(bomb b) {
 
 void printRules(vector<string> s) {
     for (int i = 0; i < s.size(); i++) {
-        cout << i << ": " << s[i] << endl;
+        cout << s[i] << endl;
     }
     cout << endl;
 }
@@ -50,7 +50,7 @@ int main() {
 
     vector<bool> wire_solution = s.getWireSolution();
     map<string, bool> toggle_solution = {{"hot", true}, {"explode", true}, {"on", false}};
-    vector<string> password_solution = { "1", "2", "3", "4"};
+    vector<string> password_solution = s.getPassword();
 
     printRules(s.getRules());
     printInfo(b);
@@ -86,6 +86,8 @@ int main() {
                     b.resetButtons();
                 }
             }
+        } else if (input == "rules") {
+            printRules(s.getRules());
         }
         bool wires_s = b.compareWires(wire_solution);
         bool toggles_s = (b.getToggles() == toggle_solution);

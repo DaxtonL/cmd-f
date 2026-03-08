@@ -9,8 +9,11 @@ void solution::generate_solution(bomb b, int n) {
         wire_solution.push_back(w);
     }
     while (n > 0) {
-        int i = n%2;
+        int i = n%3;
         int x = findWire();
+        vector<string> pass;
+        mt19937 gen(std::random_device{}());
+        string s;
         switch (i)
         {
         case 0:
@@ -20,9 +23,8 @@ void solution::generate_solution(bomb b, int n) {
             if (x != -1) {
                 wire_solution[x].first.cutWire();
                 wire_solution[x].second = true;
-                string s = "Cut wire " + to_string(x);
+                s = "Cut wire " + to_string(x);
                 rules.push_back(s);
-                cout << s << endl << endl;
                 n--;
             }
             break;
@@ -32,15 +34,39 @@ void solution::generate_solution(bomb b, int n) {
             // mark it as cannot bet cut
             if (x != -1) {
                 wire_solution[x].second = true;
-                string s = "Never cut wire " + to_string(x);
+                s = "Never cut wire " + to_string(x);
                 rules.push_back(s);
-                cout << s << endl << endl;
                 n--;
             }
             break;
         case 2:
             // generate password
-            
+            for (auto& pair : b.getButtons()) {
+                pass.push_back(pair.first);
+            }
+            shuffle(pass.begin(), pass.end(), gen);
+            s = "Password is: ";
+            password_solution = pass;
+            for (int i = 0; i < password_solution.size(); i++) {
+                s.append(password_solution[i]);
+            }
+            rules.push_back(s);
+            n--;
+            break;
+        case 3:
+            // generate password
+            for (auto& pair : b.getButtons()) {
+                pass.push_back(pair.first);
+            }
+            shuffle(pass.begin(), pass.end(), gen);
+            s = "Password is: ";
+            password_solution = pass;
+            for (int i = 0; i < password_solution.size(); i++) {
+                s.append(password_solution[i]);
+            }
+            rules.push_back(s);
+            n--;
+            break;
         default:
             break;
         }
@@ -59,6 +85,10 @@ vector<string> solution::getRules() {
     return rules;
 }
 
+vector<string> solution::getPassword() {
+    return password_solution;
+}
+
 // returns a changeable wire that hasn't been cut
 int solution::findWire() {
     vector<int> wires;
@@ -66,7 +96,6 @@ int solution::findWire() {
         pair<wire,bool> w = wire_solution[i];
         if (w.first.getIscut() == false && w.second == false) {
             wires.push_back(i);
-            cout << "found wire " << i << endl;
         }
     }
 
@@ -75,4 +104,10 @@ int solution::findWire() {
     uniform_int_distribution<> dist(0, wires.size()-1); // 3
     int z = dist(gen);
     return wires[z];
+}
+
+string solution::pickColor(vector<string> colors) {
+    mt19937 gen(std::random_device{}());
+    uniform_int_distribution<> dist(0, colors.size()-1);
+    return colors[dist(gen)];
 }

@@ -4,6 +4,7 @@
 #include <utility>
 #include <string>
 #include <random>
+#include <algorithm>
 #include "bomb.h"
 #include "wire.h"
 using namespace std;
@@ -15,6 +16,8 @@ class solution {
 
         vector<string> getRules();
 
+        vector<string> getPassword();
+
     private:
         // returns a changeable wire that hasn't been cut
         int findWire();
@@ -23,4 +26,5 @@ class solution {
         map<string, bool> toggle_solution = {{"hot", true}, {"explode", true}, {"on", false}};
         vector<string> password_solution = { "1", "2", "3", "4"};
         vector<string> rules;
+        string pickColor(vector<string> colors);
 };
