@@ -6,7 +6,7 @@ import { useGame } from '../contexts/GameContext';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { initGame } = useGame();
+  const { initGame, generateAndAssign } = useGame();
   const [gameMode, setGameMode] = useState<'classic' | 'online'>('classic');
   const [numPlayers, setNumPlayers] = useState(2);
   const [hardMode, setHardMode] = useState(false);
@@ -29,15 +29,27 @@ export default function HomeScreen() {
     setNumPlayers((prev) => Math.min(10, prev + 1));
   };
 
+  const handleLongPressAssign = async () => {
+    try {
+      if (!generateAndAssign) throw new Error('generateAndAssign not available');
+      await generateAndAssign();
+      alert('Assigned one rule per player from generated solution.');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to assign rules');
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Image
-          source={require('@/assets/images/smile.png')}
-          style={styles.smileImage}
-          resizeMode="contain"
-        />
-      </View>
+      <TouchableOpacity onLongPress={handleLongPressAssign} activeOpacity={0.8}>
+        <View style={styles.header}>
+          <Image
+            source={require('@/assets/images/smile.png')}
+            style={styles.smileImage}
+            resizeMode="contain"
+          />
+        </View>
+      </TouchableOpacity>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         <View style={styles.section}>

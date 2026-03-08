@@ -112,65 +112,47 @@ app.post(['/resetPassword', '/api/reset-password'], (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.type('html').send(`<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bomb Backend Tester</title>
-  <style>
-    body { font-family: sans-serif; margin: 20px; background: #1f1f1f; color: #f0f0f0; }
-    button { margin: 4px; padding: 8px 12px; }
-    .row { margin-bottom: 10px; }
-    pre { background: #111; padding: 12px; border-radius: 8px; overflow: auto; }
-  </style>
-</head>
-<body>
-  <h1>Bomb Backend Tester</h1>
-  <div class="row">
-    <button onclick="initGame()">Init Game</button>
-    <button onclick="fetchState()">Get State</button>
-    <button onclick="resetPassword()">Reset Password</button>
-  </div>
-  <div class="row">
-    <button onclick="cutWire(0)">Cut Wire 0</button>
-    <button onclick="cutWire(1)">Cut Wire 1</button>
-    <button onclick="cutWire(2)">Cut Wire 2</button>
-    <button onclick="cutWire(3)">Cut Wire 3</button>
-  </div>
-  <div class="row">
-    <button onclick="flipToggle('A')">Flip A</button>
-    <button onclick="flipToggle('B')">Flip B</button>
-    <button onclick="flipToggle('C')">Flip C</button>
-  </div>
-  <div class="row">
-    <button onclick="pressButton('1')">Press 1</button>
-    <button onclick="pressButton('2')">Press 2</button>
-    <button onclick="pressButton('3')">Press 3</button>
-    <button onclick="pressButton('4')">Press 4</button>
-  </div>
-  <pre id="out">Click Init Game to start.</pre>
+  res.type('json').send({
+    message: 'Bomb-mobile backend running. Use POST /init to create a game, then GET /state. Available endpoints: /init, /state, /cutWire, /flipToggle, /pressButton, /resetPassword, /generateAssign'
+  });
+});
 
-  <script>
-    async function call(path, body) {
-      const res = await fetch(path, {
-        method: body ? 'POST' : 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-      const json = await res.json();
-      document.getElementById('out').textContent = JSON.stringify(json, null, 2);
-    }
+// New endpoint: create a bomb with params (6,3,4), generate a solution, and assign one rule per player
+app.post('/generateAssign', (req, res) => {
+  if (!state) return res.status(400).json({ error: 'Game not initialized' });
 
-    function initGame() { return call('/init', { timer: 180, numPlayers: 2, gameMode: 'classic' }); }
-    function fetchState() { return call('/state'); }
-    function cutWire(index) { return call('/cutWire', { index }); }
-    function flipToggle(label) { return call('/flipToggle', { label }); }
-    function pressButton(key) { return call('/pressButton', { key }); }
-    function resetPassword() { return call('/resetPassword', {}); }
-  </script>
-</body>
-</html>`);
+  // create bomb field with parameters 6,3,4
+  state.bomb = {
+    a: 6,
+    b: 3,
+    c: 4,
+    createdAt: Date.now(),
+  };
+
+  // generate a simple solution based on the bomb - replace with more complex logic if needed
+  // solutionParts simulates solution.getRules()
+  const solutionParts = Array.from({ length: Math.max(1, state.numPlayers) }, (_, i) => {
+    // Example generation logic: create rule text using bomb fields and index
+    return `Step ${i + 1}: For bomb(${state.bomb.a},${state.bomb.b},${state.bomb.c}) do action ${i + 1}`;
+  });
+
+  // store solution in state
+  state.solution = {
+    generatedAt: Date.now(),
+    parts: solutionParts,
+  };
+
+  // assign one part of the solution to each player (overwrite players' rules with single-item arrays)
+  state.players = (state.players || Array.from({ length: state.numPlayers }, (_, i) => ({ name: `Player ${i+1}`, rules: [] })))
+    .map((p, i) => {
+      const assigned = solutionParts[i] || '';
+      return {
+        ...p,
+        rules: assigned ? [assigned] : [],
+      };
+    });
+
+  return res.json(state);
 });
 
 const port = Number(process.env.PORT || 3000);

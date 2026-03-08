@@ -1,10 +1,12 @@
 #include "solution.h"
 
 
-void solution::generate_solution(bomb b, int n) {
+void solution::generateSolution(bomb b, int n) {
     vector<wire> wires = b.getWires();
     toggle_solution = b.getToggles();
     wire_solution.clear();
+    rules.clear();
+    password_solution.clear();
     for (int i = 0; i < (int)wires.size(); i++) {
         pair<wire, bool> w = {wires[i], false};
         wire_solution.push_back(w);
@@ -63,6 +65,10 @@ void solution::generate_solution(bomb b, int n) {
             }
         }
     }
+}
+
+void solution::generate_solution(bomb b, int n) {
+    generateSolution(b, n);
 }
 
 bool solution::cutWireRule() {

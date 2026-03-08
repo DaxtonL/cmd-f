@@ -12,6 +12,9 @@ using namespace std;
 
 class solution {
     public:
+        // Generates a solution for the provided bomb using n rules.
+        void generateSolution(bomb b, int n);
+        // Backward-compatible wrapper.
         void generate_solution(bomb b, int n);
         bool bombIsDefused(bomb b);
         bool bombIsDetonated(bomb b);

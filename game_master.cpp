@@ -16,7 +16,8 @@ void game_master::innit(int t, int n) {
 
     current_bomb = make_bomb();
     current_solution = solution();
-    current_solution.generate_solution(current_bomb, num_players);
+    // Build one solution rule per player from the generated bomb solution.
+    current_solution.generateSolution(current_bomb, num_players);
 
     rules = current_solution.getRules();
     players = make_players(num_players, rules);

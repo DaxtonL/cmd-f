@@ -1,157 +1,192 @@
-import { useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useGame } from '../contexts/GameContext';
 
 export default function GameScreen() {
-  const { gameState, cutWire, flipToggle, pressButton, resetPassword, refreshState } = useGame();
+  const router = useRouter();
+  const { gameState, cutWire, flipToggle, pressButton, resetPassword } = useGame();
 
   useEffect(() => {
-    refreshState().catch(() => {
-      // Screen will still render existing context state if refresh fails.
-    });
-  }, [refreshState]);
+    // if no game running, go back to home
+    if (!gameState?.running) {
+      // small delay so the user sees the message
+      setTimeout(() => router.push('/'), 400);
+    }
+  }, [gameState?.running]);
 
-  const statusText = gameState.defused
-    ? 'DEFUSED'
-    : gameState.exploded
-      ? 'EXPLODED'
-      : gameState.running
-        ? 'RUNNING'
-        : 'IDLE';
+  const wires = gameState?.wires || [];
+  const toggles = gameState?.toggles || {};
+  const buttons = gameState?.buttons || {};
+  const password = gameState?.password || [];
+
+  const handleCutWire = async (i: number) => {
+    try {
+      await cutWire(i);
+    } catch (err) {
+      Alert.alert('Error', (err as Error)?.message || 'Failed to cut wire');
+    }
+  };
+
+  const handleFlipToggle = async (label: string) => {
+    try {
+      await flipToggle(label);
+    } catch (err) {
+      Alert.alert('Error', (err as Error)?.message || 'Failed to flip toggle');
+    }
+  };
+
+  const handlePressButton = async (key: string) => {
+    try {
+      await pressButton(key);
+    } catch (err) {
+      Alert.alert('Error', (err as Error)?.message || 'Failed to press button');
+    }
+  };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Bomb Control</Text>
-      <Text style={styles.subtitle}>Status: {statusText}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Bomb Console</Text>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Wires</Text>
-        <View style={styles.rowWrap}>
-          {gameState.wires.map((wire) => (
+        <FlatList
+          horizontal
+          data={wires}
+          keyExtractor={(w) => String(w.id)}
+          renderItem={({ item, index }) => (
             <TouchableOpacity
-              key={wire.id}
-              style={[styles.actionButton, wire.cut && styles.actionButtonDisabled]}
-              disabled={wire.cut || gameState.exploded || gameState.defused}
-              onPress={() => cutWire(wire.id).catch(() => {})}
+              style={[
+                styles.wire,
+                item.cut ? styles.wireCut : styles.wireLive,
+                { marginLeft: index === 0 ? 0 : 12 },
+              ]}
+              onPress={() => handleCutWire(index)}
             >
-              <Text style={styles.actionText}>Wire {wire.id} ({wire.color}) {wire.cut ? 'CUT' : 'CUT NOW'}</Text>
+              <Text style={styles.wireText}>{item.cut ? 'CUT' : item.color?.toUpperCase() || `W${index}`}</Text>
             </TouchableOpacity>
-          ))}
-        </View>
+          )}
+        />
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Toggles</Text>
-        <View style={styles.rowWrap}>
-          {Object.entries(gameState.toggles).map(([label, value]) => (
-            <TouchableOpacity
-              key={label}
-              style={styles.actionButton}
-              disabled={gameState.exploded || gameState.defused}
-              onPress={() => flipToggle(label).catch(() => {})}
-            >
-              <Text style={styles.actionText}>{label}: {value ? 'ON' : 'OFF'}</Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.row}>
+          {Object.keys(toggles).length === 0 && <Text style={styles.note}>No toggles</Text>}
+          {Object.keys(toggles).map((k) => {
+            const on = toggles[k];
+            return (
+              <TouchableOpacity
+                key={k}
+                style={[styles.toggle, on ? styles.toggleOn : styles.toggleOff]}
+                onPress={() => handleFlipToggle(k)}
+              >
+                <Text style={[styles.toggleLabel, on ? styles.toggleLabelOn : null]}>{k}</Text>
+                <Text style={styles.toggleState}>{on ? 'ON' : 'OFF'}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Buttons</Text>
-        <View style={styles.rowWrap}>
-          {Object.entries(gameState.buttons).map(([key, pressed]) => (
+        <Text style={styles.sectionTitle}>Buttons (enter code)</Text>
+        <View style={styles.keypad}>
+          {['1','2','3','4','5','6','7','8','9','0'].map((k) => (
             <TouchableOpacity
-              key={key}
-              style={[styles.actionButton, pressed && styles.actionButtonDisabled]}
-              disabled={pressed || gameState.exploded || gameState.defused}
-              onPress={() => pressButton(key).catch(() => {})}
+              key={k}
+              style={[styles.key, buttons[k] ? styles.keyPressed : styles.keyIdle]}
+              onPress={() => handlePressButton(k)}
             >
-              <Text style={styles.actionText}>Button {key}: {pressed ? 'PRESSED' : 'PRESS'}</Text>
+              <Text style={[styles.keyText, buttons[k] ? styles.keyTextPressed : null]}>{k}</Text>
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity style={styles.resetButton} onPress={() => resetPassword().catch(() => {})}>
-          <Text style={styles.resetText}>Reset Password</Text>
+
+        <View style={styles.row}>
+          <Text style={styles.note}>Password: {password.join('')}</Text>
+          <TouchableOpacity style={styles.resetBtn} onPress={resetPassword}>
+            <Text style={styles.resetText}>Reset</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.push('/')}>
+          <Text style={styles.backText}>← HOME</Text>
         </TouchableOpacity>
-        <Text style={styles.passwordText}>Password: {gameState.password.join('') || '(empty)'}</Text>
       </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Rules</Text>
-        {gameState.rules.map((rule, idx) => (
-          <Text key={`${rule}-${idx}`} style={styles.ruleText}>{idx + 1}. {rule}</Text>
-        ))}
-      </View>
-    </ScrollView>
+    </View>
   );
 }
 
+const RED = '#C85A54';
+const BLACK = '#111';
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1f1f1f',
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 40,
-    gap: 12,
-  },
-  title: {
-    color: '#ffffff',
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  subtitle: {
-    color: '#d4d4d4',
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  section: {
-    backgroundColor: '#2d2d2d',
+  container: { flex: 1, backgroundColor: '#1b1b1b', padding: 18 },
+  title: { color: '#fff', fontSize: 20, fontWeight: '700', marginBottom: 12 },
+  section: { marginBottom: 18, backgroundColor: '#161616', padding: 12, borderRadius: 12 },
+  sectionTitle: { color: '#ddd', fontSize: 14, fontWeight: '700', marginBottom: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
+  note: { color: '#bbb', marginRight: 12 },
+
+  wire: {
+    width: 90,
+    height: 56,
     borderRadius: 10,
-    padding: 12,
-  },
-  sectionTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  rowWrap: {
-    gap: 8,
-  },
-  actionButton: {
-    backgroundColor: '#cc5a55',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  actionButtonDisabled: {
-    backgroundColor: '#666666',
-  },
-  actionText: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  resetButton: {
-    marginTop: 10,
-    backgroundColor: '#5555aa',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: BLACK,
   },
-  resetText: {
-    color: '#fff',
-    fontWeight: '700',
+  wireLive: { backgroundColor: RED },
+  wireCut: { backgroundColor: '#444' },
+  wireText: { color: '#fff', fontWeight: '700' },
+
+  toggle: {
+    width: 120,
+    height: 56,
+    borderRadius: 10,
+    marginRight: 12,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: BLACK,
   },
-  passwordText: {
-    marginTop: 8,
-    color: '#f0f0f0',
+  toggleOn: { backgroundColor: RED },
+  toggleOff: { backgroundColor: '#333' },
+  toggleLabel: { color: '#fff', fontWeight: '700' },
+  toggleLabelOn: { color: BLACK },
+  toggleState: { color: '#fff', marginTop: 4 },
+
+  keypad: { flexDirection: 'row', flexWrap: 'wrap' },
+  key: {
+    width: 70,
+    height: 60,
+    borderRadius: 10,
+    margin: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: BLACK,
   },
-  ruleText: {
-    color: '#f0f0f0',
-    marginBottom: 4,
+  keyIdle: { backgroundColor: '#111' },
+  keyPressed: { backgroundColor: RED },
+  keyText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  keyTextPressed: { color: BLACK },
+
+  resetBtn: {
+    marginLeft: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: RED,
+    borderRadius: 8,
   },
+  resetText: { color: '#fff', fontWeight: '700' },
+
+  footer: { marginTop: 10, alignItems: 'flex-start' },
+  backBtn: { padding: 10 },
+  backText: { color: RED, fontWeight: '700' },
 });
