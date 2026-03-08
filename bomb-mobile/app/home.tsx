@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
+
 import { useGame } from '../contexts/GameContext';
 
 export default function HomeScreen() {
@@ -10,26 +11,28 @@ export default function HomeScreen() {
   const [numPlayers, setNumPlayers] = useState(2);
   const [hardMode, setHardMode] = useState(false);
 
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
     const timer = hardMode ? 120 : 180;
-    initGame(timer, numPlayers, gameMode);
-    // TODO: Navigate to player-rules or game screen
-    // router.push('/player-rules');
-    alert(`Game started! ${numPlayers} player${numPlayers > 1 ? 's' : ''}, ${hardMode ? 'HARD' : 'EASY'} mode`);
+    try {
+      await initGame(timer, numPlayers, gameMode);
+      router.push('/game');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to start game');
+    }
   };
 
   const decrementPlayers = () => {
-    setNumPlayers(prev => Math.max(2, prev - 1));
+    setNumPlayers((prev) => Math.max(2, prev - 1));
   };
 
   const incrementPlayers = () => {
-    setNumPlayers(prev => Math.min(10, prev + 1));
+    setNumPlayers((prev) => Math.min(10, prev + 1));
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image 
+        <Image
           source={require('@/assets/images/smile.png')}
           style={styles.smileImage}
           resizeMode="contain"
@@ -45,7 +48,7 @@ export default function HomeScreen() {
               onPress={() => setGameMode('classic')}
             >
               <Text style={[styles.modeButtonText, gameMode === 'classic' && styles.modeButtonTextActive]}>
-                👥 Classic
+                Classic
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -53,32 +56,22 @@ export default function HomeScreen() {
               onPress={() => setGameMode('online')}
             >
               <Text style={[styles.modeButtonText, gameMode === 'online' && styles.modeButtonTextActive]}>
-                🌐 Online
+                Online
               </Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.description}>
-            <Text style={styles.bold}>Classic:</Text> Gather in the same room and pass the device between players
-          </Text>
-          <Text style={styles.description}>
-            <Text style={styles.bold}>Online:</Text> Play in your group chat (WhatsApp, iMessage, etc.)
-          </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎯 PLAYERS</Text>
+          <Text style={styles.sectionTitle}>PLAYERS</Text>
           <View style={styles.playerCounter}>
-            <TouchableOpacity 
-              style={styles.counterButton}
-              onPress={decrementPlayers}
-            >
+            <TouchableOpacity style={styles.counterButton} onPress={decrementPlayers}>
               <Text style={styles.counterButtonText}>-</Text>
             </TouchableOpacity>
-            <Text style={styles.playerCount}>{numPlayers} PLAYER{numPlayers > 1 ? 'S' : ''}</Text>
-            <TouchableOpacity 
-              style={styles.counterButton}
-              onPress={incrementPlayers}
-            >
+            <Text style={styles.playerCount}>
+              {numPlayers} PLAYER{numPlayers > 1 ? 'S' : ''}
+            </Text>
+            <TouchableOpacity style={styles.counterButton} onPress={incrementPlayers}>
               <Text style={styles.counterButtonText}>+</Text>
             </TouchableOpacity>
           </View>
@@ -86,7 +79,7 @@ export default function HomeScreen() {
 
         <View style={styles.section}>
           <View style={styles.timeHeader}>
-            <Text style={styles.sectionTitle}>⚡ MODE</Text>
+            <Text style={styles.sectionTitle}>MODE</Text>
             <TouchableOpacity
               style={[styles.toggle, hardMode && styles.toggleActive]}
               onPress={() => setHardMode(!hardMode)}
@@ -98,11 +91,8 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.bottomButtons}>
-          <TouchableOpacity 
-            style={styles.startButton}
-            onPress={handleStartGame}
-          >
-            <Text style={styles.startButtonText}>▶  START GAME</Text>
+          <TouchableOpacity style={styles.startButton} onPress={handleStartGame}>
+            <Text style={styles.startButtonText}>START GAME</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -170,15 +160,6 @@ const styles = StyleSheet.create({
   modeButtonTextActive: {
     color: '#fff',
   },
-  description: {
-    fontSize: 11,
-    color: '#666',
-    marginBottom: 4,
-    lineHeight: 16,
-  },
-  bold: {
-    fontWeight: '700',
-  },
   playerCounter: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -202,7 +183,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#333',
   },
-
   timeHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -233,7 +213,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   toggleCircleActive: {},
-
   bottomButtons: {
     marginTop: 10,
   },
