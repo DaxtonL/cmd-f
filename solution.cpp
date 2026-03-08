@@ -183,3 +183,12 @@ vector<wire> solution::getWiresWithColor(string color, vector<wire> wires) {
     }
     return c_wires;
 }
+
+bool solution::checkResetPassword(bomb b) {
+    if (b.getPassword().size() >= password_solution.size()) {
+        if (b.getPassword() != password_solution) {
+            return true;
+        }
+    }
+    return false;
+}

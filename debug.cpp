@@ -43,11 +43,6 @@ int main() {
     bomb b(6, 3, 4);
     solution s;
     s.generate_solution(b, 6);
-
-    vector<bool> wire_solution = s.getWireSolution();
-    map<string, bool> toggle_solution = s.getToggleSolution();
-    vector<string> password_solution = s.getPassword();
-
     printRules(s.getRules());
     printInfo(b);
     while (run) {
@@ -70,10 +65,8 @@ int main() {
             cout << "What button do you want to press" << endl;
             getline(cin, input);
             b.pressButton(input);
-            if (b.getPassword().size() >= password_solution.size()) {
-                if (b.getPassword() != password_solution) {
-                    b.resetButtons();
-                }
+            if (s.checkResetPassword(b)){
+                b.resetButtons();
             }
         } else if (input == "rules") {
             printRules(s.getRules());
