@@ -9,7 +9,7 @@ bomb::bomb() {
     buttons = {};
     password = {};
     facts = {};
-}
+}// test
 bomb::bomb(int numWires, int numToggles, int numButtons) {
     vector<wire> pool;
     for (int i = 0; i < numWires; i++) {
