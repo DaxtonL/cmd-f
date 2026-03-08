@@ -26,6 +26,7 @@
 #include <string>
 #include <map>
 #include "player.cpp"
+#include "game_master.h"
 
 #include <chrono>
 
@@ -34,25 +35,31 @@ using namespace std::chrono_literals;
 // we use a fixed timestep of 1 / (60 fps) = 16 milliseconds
 constexpr std::chrono::nanoseconds timestep(16ms);
 
-struct game_master(int t)
+game_master::game_master()
+{
+    // this contains the state of your game, such as positions and velocities
+    int timer; 
+};
+
+game_master::game_master(int t)
 {
     // this contains the state of your game, such as positions and velocities
     int timer = t; 
 };
 
-bool handle_events()
+bool game_master::handle_events()
 {
     // poll for events
 
     return false; // true if the user wants to quit the game
 }
 
-void update(game_master *state)
+void game_master::update(game_master *state)
 {
     // update game logic here
 }
 
-void render(game_master const &state)
+void game_master::render(game_master const &state)
 {
     // render stuff here
 }
@@ -66,7 +73,7 @@ void render(game_master const &state)
 //     return interpolated_state;
 // }
 
-int main()
+int game_master::main()
 {
     using clock = std::chrono::high_resolution_clock;
 
