@@ -42,7 +42,7 @@ int main() {
     bool run = true;
     bomb b(6, 3, 4);
     solution s;
-    s.generate_solution(b, 6);
+    s.generate_solution(b, 8);
     printRules(s.getRules());
     printInfo(b);
     while (run) {

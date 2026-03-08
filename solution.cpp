@@ -10,40 +10,57 @@ void solution::generate_solution(bomb b, int n) {
         wire_solution.push_back(w);
     }
 
+    int m = 5;
     while (n > 0) {
-        int i = 6-n;
         vector<string> pass;
         mt19937 gen(std::random_device{}());
-        switch (i)
-        {
-        case 0:
-            cutWireRule();
-            n--;
-            break;
-        case 1:
-            neverCutWireRule();
-            n--;
-            break;
-        case 2:
-            passwordRule(b, gen);
-            n--;
-            break;
-        case 3:
-            toggleRule(b, gen);
-            n--;
-            break;
-        case 4:
-            cutAllRule(b);
-            n--;
-            break;
-        case 5: {
-            cutIfRule(b, gen);
-            n--;
-            break;
-        }
-        default:
-            n--;
-            break;
+        if (m > 0) {
+            switch (m) {
+                case 5:
+                    passwordRule(b, gen);
+                    m--;
+                    n--;
+                    break;
+                case 4:
+                    cutWireRule();
+                    m--;
+                    n--;
+                    break;
+                case 3:
+                    neverCutWireRule();
+                    m--;
+                    n--;
+                    break;
+                case 2:
+                    toggleRule(b, gen);
+                    m--;
+                    n--;
+                    break;
+                case 1:
+                    cutAllRule(b);
+                    m--;
+                    n--;
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            switch (n%3) {
+                case 0:
+                    toggleRule(b, gen);
+                    n--;
+                    break;
+                case 2:
+                    cutWireRule();
+                    n--;
+                    break;
+                case 1:
+                    neverCutWireRule();
+                    n--;
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
@@ -75,7 +92,13 @@ bool solution::neverCutWireRule() {
 void solution::toggleRule(bomb b, mt19937 gen) {
     vector<string> toggles;
     for (auto& pair : b.getToggles()) {
-        toggles.push_back(pair.first);
+        if (pair.second != true) {
+            toggles.push_back(pair.first);
+        }
+    }
+
+    if (toggles.empty()) {
+        return;
     }
     
     uniform_int_distribution<> dist(0, toggles.size()-1);
