@@ -76,7 +76,7 @@ vector<player> game_master::make_players(int n) {
     return players;
  }
 
- void getRules() {
+ void game_master::getRules() {
     vector<string> rules = current_solution.getRules();
     for (int i = 0; i < rules.size(); i++) {
         cout << "Player " << i << ": " << rules[i] << endl;

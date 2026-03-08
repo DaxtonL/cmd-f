@@ -24,6 +24,7 @@ public:
     bool handle_events();
     void update(game_master *state);
     vector<player> make_players(int n);
+    void getRules();
 
     private :
 
