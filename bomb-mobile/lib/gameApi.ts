@@ -39,7 +39,7 @@ function resolveHost(): string {
   return 'localhost';
 }
 
-const API_BASE = `http://${resolveHost()}:5050/api`;
+const API_BASE = `http://${resolveHost()}:3000`;
 
 async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
@@ -71,28 +71,28 @@ export const gameApi = {
   },
 
   cutWire(index: number) {
-    return apiRequest<BackendGameState>('/cut-wire', {
+    return apiRequest<BackendGameState>('/cutWire', {
       method: 'POST',
       body: JSON.stringify({ index }),
     });
   },
 
   flipToggle(label: string) {
-    return apiRequest<BackendGameState>('/flip-toggle', {
+    return apiRequest<BackendGameState>('/flipToggle', {
       method: 'POST',
       body: JSON.stringify({ label }),
     });
   },
 
   pressButton(key: string) {
-    return apiRequest<BackendGameState>('/press-button', {
+    return apiRequest<BackendGameState>('/pressButton', {
       method: 'POST',
       body: JSON.stringify({ key }),
     });
   },
 
   resetPassword() {
-    return apiRequest<BackendGameState>('/reset-password', {
+    return apiRequest<BackendGameState>('/resetPassword', {
       method: 'POST',
       body: JSON.stringify({}),
     });
