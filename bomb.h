@@ -11,7 +11,7 @@ class bomb{
         // takes in a list of colors, labels, and keys for elements
         // and a map of "facts"
         bomb();
-        bomb(vector<string> colors, vector<string> labels, vector<string> keys, map<string, bool> facts_);
+        bomb(int numWires, int numToggles, int numButtons);
 
         // if the wire is not cut, cut it
         // returns true if there is a wire to cuts
@@ -40,4 +40,7 @@ class bomb{
         map<string, bool> buttons;      // true = pressed
         map<string, bool> facts;
         vector<string> password;
+        vector<string> colors = {"red", "blue", "green", "yellow", "orange"};
+        vector<string> labels = {"explode", "hot", "on"};
+        vector<string> keys = {"1", "2", "3", "4"};
 };

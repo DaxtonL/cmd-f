@@ -40,11 +40,7 @@ void printRules(vector<string> s) {
 
 int main() {
     bool run = true;
-    vector<string> colors = {"red", "blue", "green", "yellow", "purple"};
-    vector<string> labels = {"hot", "explode", "on"};
-    vector<string> keys = {"1", "2", "3", "4"};
-    map<string, bool> rules;
-    bomb b(colors, labels, keys, rules);
+    bomb b(5, 3, 4);
     solution s;
     s.generate_solution(b, 5);
 

@@ -10,22 +10,20 @@ bomb::bomb() {
     password = {};
     facts = {};
 }
-bomb::bomb(vector<string> colors, vector<string> labels, vector<string> keys, map<string, bool> facts_) {
-    for (int i = 0; i < colors.size(); i++) {
+bomb::bomb(int numWires, int numToggles, int numButtons) {
+    for (int i = 0; i < numWires; i++) {
         wire w;
         w.setColor(colors[i]);
         wires.push_back(w);
     }
 
-    for (int i = 0; i < labels.size(); i++) {
+    for (int i = 0; i < numToggles; i++) {
         toggles[labels[i]] = false;
     }
 
-    for (int i = 0; i < keys.size(); i++) {
+    for (int i = 0; i < numButtons; i++) {
         buttons[keys[i]] = false;
     }
-
-    facts = facts_;
 }
 
 // if the wire is not cut, cut it
