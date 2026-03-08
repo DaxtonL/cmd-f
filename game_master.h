@@ -41,17 +41,30 @@ public:
 
     void run();
 
-private:
 
+    void setupGame();
+    void printInfo() const;
+    void printRules() const;
+
+    void update();
+    bool isGameOver() const;
+    void run();
+    void render();
+    bool handle_events();
+    void update(game_master *state);
+    vector<player> make_players(int n);
+    void getRules();
+
+private:
     bomb current_bomb;
     solution current_solution;
     vector<player> players;
 
-    int timer;
-    int num_players;
-    bool exploded;
-    bool defused;
-    bool running;
+    int timer = 0;
+    int num_players = 0;
+    bool exploded = false;
+    bool defused = false;
+    bool running = false;
 
     vector<bool> wire_solution;
     map<string, bool> toggle_solution;
