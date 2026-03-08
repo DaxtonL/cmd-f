@@ -11,19 +11,20 @@ using namespace std;
 class game_master {
 public:
     game_master();
-    innit(int t);
+    void innit(int t);
 
     void setupGame();
     void printInfo() const;
     void printRules() const;
 
-    void handleCommand(const string& input);
     void update();
     bool isGameOver() const;
     void run();
+    void render(game_master const &state);
+    bool handle_events();
+    void update(game_master *state);
 
-private:
-    bomb current_bomb;
+    private : bomb current_bomb;
     solution current_solution;
 
     int timer;
