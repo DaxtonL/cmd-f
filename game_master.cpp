@@ -34,9 +34,10 @@ using namespace std::chrono_literals;
 // we use a fixed timestep of 1 / (60 fps) = 16 milliseconds
 constexpr std::chrono::nanoseconds timestep(16ms);
 
-struct game_master
+struct game_master(int t)
 {
     // this contains the state of your game, such as positions and velocities
+    int timer = t; 
 };
 
 bool handle_events()
@@ -51,10 +52,10 @@ void update(game_master *state)
     // update game logic here
 }
 
-// void render(game_master const &state)
-// {
-//     // render stuff here
-// }
+void render(game_master const &state)
+{
+    // render stuff here
+}
 
 // game_master interpolate(game_master const &current, game_master const &previous, float alpha)
 // {
