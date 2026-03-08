@@ -43,18 +43,19 @@ game_master::game_master()
     int timer;
     bomb current_bomb;
     solution current_solution;
-    player players; 
+    int num_players;
     bool exploded;
     bool defused;
     bool running;
 };
 
-game_master::innit(int t)
+void game_master::innit(int t)
 {
     // this contains the state of your game, such as positions and velocities
     int timer = t; 
-    solution current_solution(current_bomb, players->getRules().size());
-    
+    bomb current_bomb();
+    solution current_solution(current_bomb, num_players);
+
 };
 
 bool game_master::handle_events()
@@ -91,7 +92,7 @@ void game_master::render(game_master const &state)
 //     return interpolated_state;
 // }
 
-int game_master::main()
+void game_master::run()
 {
     using clock = std::chrono::high_resolution_clock;
 
