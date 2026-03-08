@@ -51,19 +51,19 @@ void update(game_master *state)
     // update game logic here
 }
 
-void render(game_master const &state)
-{
-    // render stuff here
-}
+// void render(game_master const &state)
+// {
+//     // render stuff here
+// }
 
-game_master interpolate(game_master const &current, game_master const &previous, float alpha)
-{
-    game_master interpolated_state;
+// game_master interpolate(game_master const &current, game_master const &previous, float alpha)
+// {
+//     game_master interpolated_state;
 
-    // interpolate between previous and current by alpha here
+//     // interpolate between previous and current by alpha here
 
-    return interpolated_state;
-}
+//     return interpolated_state;
+// }
 
 int main()
 {
@@ -95,8 +95,5 @@ int main()
 
         // calculate how close or far we are from the next timestep
         auto alpha = (float)lag.count() / timestep.count();
-        auto interpolated_state = interpolate(current_state, previous_state, alpha);
-
-        render(interpolated_state);
     }
 }
