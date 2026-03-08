@@ -76,6 +76,7 @@ int main()
 
     game_master current_state;
     game_master previous_state;
+    // test
 
     while (!quit_game)
     {
