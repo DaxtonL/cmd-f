@@ -44,10 +44,11 @@ game_master::game_master()
 void game_master::innit(int t, int n)
 {
     // this contains the state of your game, such as positions and velocities
-    int timer = t;
-    int num_players = n; 
+    timer = t;
+    num_players = n; 
     current_bomb = make_bomb();
     current_solution.generate_solution(current_bomb, num_players);
+    render();
 };
 
 bomb make_bomb() {
@@ -59,9 +60,30 @@ bomb make_bomb() {
 bool game_master::handle_events()
 {
     // poll for events
+    vector<player> players = make_players(num_players);
+    getRules();
 
     return false; // true if the user wants to quit the game
 }
+
+vector<player> game_master::make_players(int n) {
+    vector<player> players;
+    vector<string> rules = current_solution.getRules();
+    for (int i = 0; i < n; i++)
+    {
+        players.emplace_back(to_string(i), rules[i]);
+    }
+    return players;
+ }
+
+ void getRules() {
+    vector<string> rules = current_solution.getRules();
+    for (int i = 0; i < rules.size(); i++) {
+        cout << "Player " << i << ": " << rules[i] << endl;
+    }
+ }
+
+
 
 void game_master::update(game_master *state)
 {
@@ -71,10 +93,10 @@ void game_master::update(game_master *state)
 }
 
 
-void game_master::render(game_master const &state)
+void game_master::render()
 {
     // render stuff here
-
+    
 }
 
 // game_master interpolate(game_master const &current, game_master const &previous, float alpha)

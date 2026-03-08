@@ -20,12 +20,13 @@ public:
     void update();
     bool isGameOver() const;
     void run();
-    void render(game_master const &state);
+    void render();
     bool handle_events();
     void update(game_master *state);
+    vector<player> make_players(int n);
 
-    private : 
-    
+    private :
+
     bomb current_bomb;
     solution current_solution;
 
