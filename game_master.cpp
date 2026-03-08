@@ -22,11 +22,13 @@
  * SOFTWARE.
  */
 
+#pragma once
 #include <vector>
 #include <string>
 #include <map>
-#include "player.cpp"
+#include "player.h"
 #include "game_master.h"
+#include "bomb.h"
 
 #include <chrono>
 
@@ -39,12 +41,18 @@ game_master::game_master()
 {
     // this contains the state of your game, such as positions and velocities
     int timer; 
+    
 };
 
 game_master::game_master(int t)
 {
     // this contains the state of your game, such as positions and velocities
     int timer = t; 
+    bomb current_bomb;
+    solution current_solution;
+    bool exploded;
+    bool defused;
+    bool running;
 };
 
 bool game_master::handle_events()
