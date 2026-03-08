@@ -53,8 +53,8 @@ game_master::innit(int t)
 {
     // this contains the state of your game, such as positions and velocities
     int timer = t; 
-    bomb current_bomb;
-    solution current_solution()
+    solution current_solution(current_bomb, players->getRules().size());
+    
 };
 
 bool game_master::handle_events()
