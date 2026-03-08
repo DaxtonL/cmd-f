@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useGame } from '../contexts/GameContext';
 
@@ -19,6 +19,7 @@ export default function PlayerRulesScreen() {
     name: `Player ${playerIndex + 1}`,
     rules: ['No rule assigned'],
   };
+  const revealedRule = activePlayer.rules[0] || 'No rule assigned';
 
   const cardColor = PLAYER_COLORS[playerIndex % PLAYER_COLORS.length];
   const isLastPlayer = playerIndex >= totalPlayers - 1;
@@ -47,25 +48,23 @@ export default function PlayerRulesScreen() {
         onPressIn={() => setRevealed(true)}
         onPressOut={() => setRevealed(false)}
       >
-        <Text style={styles.cardTitle}>{"YOU'RE ALONE IN A ROOM WITH A BOMB."}</Text>
-
         {revealed ? (
-          <ScrollView style={styles.rulesWrap}>
-            {activePlayer.rules.map((rule, idx) => (
-              <Text key={`${activePlayer.name}-${idx}`} style={styles.ruleText}>
-                {idx + 1}. {rule}
-              </Text>
-            ))}
-          </ScrollView>
+          <View style={styles.secondaryPanel}>
+            <Text style={styles.secondaryTitle}>YOUR RULE</Text>
+            <Text style={styles.ruleText}>{revealedRule}</Text>
+          </View>
         ) : (
-          <Text style={styles.cardBody}>Play your part in helping defuse it.</Text>
+          <View style={styles.primaryPanel}>
+            <Text style={styles.cardTitle}>{"YOU'RE ALONE IN A ROOM WITH A BOMB."}</Text>
+            <Text style={styles.cardBody}>Play your part in helping defuse it.</Text>
+          </View>
         )}
 
         <Text style={styles.holdText}>{revealed ? 'RELEASE TO HIDE' : 'HOLD TO REVEAL'}</Text>
       </Pressable>
 
       <TouchableOpacity style={styles.nextButton} onPress={handleNextPlayer}>
-        <Text style={styles.nextButtonText}>{isLastPlayer ? 'START BOMB' : 'NEXT PLAYER'}</Text>
+        <Text style={styles.nextButtonText}>{isLastPlayer ? '▶  START BOMB' : '▶  NEXT PLAYER'}</Text>
       </TouchableOpacity>
 
       <Text style={styles.counterText}>
@@ -103,48 +102,69 @@ const styles = StyleSheet.create({
   },
   ruleCard: {
     borderRadius: 14,
-    minHeight: 330,
+    minHeight: 390,
     paddingHorizontal: 20,
     paddingVertical: 22,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.25,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 6 },
     elevation: 6,
   },
+  primaryPanel: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  secondaryPanel: {
+    backgroundColor: '#e7e2dc',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#1e1e1e',
+    paddingHorizontal: 18,
+    paddingVertical: 20,
+    minHeight: 220,
+    justifyContent: 'center',
+  },
   cardTitle: {
     textAlign: 'center',
     color: '#222',
     fontWeight: '800',
-    fontSize: 22,
-    lineHeight: 28,
+    fontSize: 33,
+    lineHeight: 38,
     marginTop: 10,
+  },
+  secondaryTitle: {
+    textAlign: 'center',
+    color: '#222',
+    fontWeight: '800',
+    fontSize: 30,
+    lineHeight: 34,
+    marginBottom: 10,
   },
   cardBody: {
     textAlign: 'center',
     color: '#222',
-    fontSize: 26,
-    lineHeight: 32,
+    fontSize: 34,
+    lineHeight: 42,
     marginTop: 24,
-  },
-  rulesWrap: {
-    marginTop: 18,
-    maxHeight: 160,
   },
   ruleText: {
     color: '#1b1b1b',
-    fontSize: 20,
-    lineHeight: 28,
-    marginBottom: 8,
-    fontWeight: '600',
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 12,
   },
   holdText: {
+    position: 'absolute',
+    bottom: 16,
+    alignSelf: 'center',
     textAlign: 'center',
     color: '#1f1f1f',
     fontWeight: '800',
     fontSize: 16,
-    marginTop: 18,
   },
   nextButton: {
     backgroundColor: '#cf3530',
