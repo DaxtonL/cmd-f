@@ -13,9 +13,7 @@ export default function HomeScreen() {
   const handleStartGame = () => {
     const timer = hardMode ? 120 : 180;
     initGame(timer, numPlayers, gameMode);
-    // TODO: Navigate to player-rules or game screen
-    // router.push('/player-rules');
-    alert(`Game started! ${numPlayers} player${numPlayers > 1 ? 's' : ''}, ${hardMode ? 'HARD' : 'EASY'} mode`);
+    router.push('/player-rules');
   };
 
   const decrementPlayers = () => {
