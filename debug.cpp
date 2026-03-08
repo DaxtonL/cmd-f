@@ -11,7 +11,7 @@ void printInfo(bomb b) {
     map<string, bool> toggles = b.getToggles();
     map<string, bool> buttons = b.getButtons();
     vector<string> password = b.getPassword();
-    for (int i = 0; i < wires.size(); i++) {
+    for (size_t i = 0; i < wires.size(); i++) {
         wire w = b.getWires()[i];
         cout << "Wire " << i << " " << w.getColor() << " cut:" << boolalpha << w.getIscut() << endl; 
     }
@@ -25,14 +25,14 @@ void printInfo(bomb b) {
     }
     cout << endl;
     cout << "Entered password: ";
-    for (int i = 0; i < password.size(); i++) {
+    for (size_t i = 0; i < password.size(); i++) {
         cout << password[i] << " ";
     }
     cout << endl << endl;
 }
 
 void printRules(vector<string> s) {
-    for (int i = 0; i < s.size(); i++) {
+    for (size_t i = 0; i < s.size(); i++) {
         cout << s[i] << endl;
     }
     cout << endl;

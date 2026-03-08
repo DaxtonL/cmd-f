@@ -20,14 +20,18 @@ class solution {
     private:
         // returns a changeable wire that hasn't been cut
         int findWire();
+        bool cutWireRule();
+        bool neverCutWireRule();
+        void toggleRule(bomb b, mt19937 gen);
+        void cutAllRule(bomb b);
+        void cutIfRule(bomb b, mt19937 gen);
+        void passwordRule(bomb b, mt19937 gen);
+
         vector<bool> getWireSolution();
         vector<string> getPassword();
-        map<string, bool> getToggleSolution();
         vector<pair<wire, bool>> wire_solution; // second bool represents if wire can be changed
         map<string, bool> toggle_solution = {{"hot", true}, {"explode", true}, {"on", false}};
         vector<string> password_solution = { "1", "2", "3", "4"};
         vector<string> rules;
-        string pickColor(vector<wire> wires);
-        string getToggle(map<string,bool> toggles);
-        vector<wire> getWiresWithColor(string color, vector<wire> wires);
+        string pickColor(vector<wire> wires);        
 };
