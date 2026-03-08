@@ -1,7 +1,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include "wire.cpp"
+#include "wire.h"
 using namespace std;
 
 

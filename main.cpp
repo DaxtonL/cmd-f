@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include "bomb.cpp"
+#include "solution.cpp"
 using namespace std;
 
 void printInfo(bomb b) {
@@ -30,6 +31,13 @@ void printInfo(bomb b) {
     cout << endl << endl;
 }
 
+void printRules(vector<string> s) {
+    for (int i = 0; i < s.size(); i++) {
+        cout << i << ": " << s[i] << endl;
+    }
+    cout << endl;
+}
+
 int main() {
     bool run = true;
     vector<string> colors = {"red", "blue", "green"};
@@ -37,11 +45,14 @@ int main() {
     vector<string> keys = {"1", "2", "3", "4"};
     map<string, bool> rules;
     bomb b(colors, labels, keys, rules);
+    solution s;
+    s.generate_solution(b, 4);
 
-    vector<bool> wire_solution = {true, false, false};
+    vector<bool> wire_solution = s.getWireSolution();
     map<string, bool> toggle_solution = {{"hot", true}, {"explode", true}, {"on", false}};
     vector<string> password_solution = { "1", "2", "3", "4"};
 
+    printRules(s.getRules());
     printInfo(b);
     while (run) {
         string input;

@@ -6,7 +6,6 @@ class wire {
         wire() {
             color = "NO SET COLOR";
             cut = false;
-            never_cut = false;
         }
 
         void cutWire() {
@@ -29,5 +28,4 @@ class wire {
 
     string color;
     bool cut;
-    bool never_cut;
 };
