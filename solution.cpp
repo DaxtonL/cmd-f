@@ -38,6 +38,9 @@ void solution::generate_solution(bomb b, int n) {
                 n--;
             }
             break;
+        case 2:
+            // generate password
+            
         default:
             break;
         }
