@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 
 import { BackendGameState, gameApi, Wire } from '../lib/gameApi';
 
@@ -25,6 +25,9 @@ export interface GameContextType {
   pressButton: (key: string) => Promise<void>;
   resetPassword: () => Promise<void>;
   generateAndAssign?: () => Promise<void>;
+  // new timer fields
+  remainingTime: number;
+  totalTime: number;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -48,6 +51,41 @@ export function GameProvider({ children }: { children: ReactNode }) {
     running: false,
   });
 
+  // timer state
+  const [remainingTime, setRemainingTime] = useState<number>(0);
+  const [totalTime, setTotalTime] = useState<number>(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ensure interval cleared on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  const startLocalCountdown = (seconds: number) => {
+    // clear any previous interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setTotalTime(seconds);
+    setRemainingTime(seconds);
+
+    intervalRef.current = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
   const initGame = async (timer: number, numPlayers: number, gameMode: 'classic' | 'online', hardMode = false) => {
     const resp = await fetch(`${serverUrl}/init`, {
       method: 'POST',
@@ -60,6 +98,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
     const json = await resp.json();
     setGameState(json);
+
+    // start the local countdown immediately with the requested timer
+    // default to 180s if backend didn't provide
+    const startSeconds = typeof timer === 'number' && timer > 0 ? timer : (json.timer || 180);
+    startLocalCountdown(startSeconds);
   };
 
   const fetchState = async () => {
@@ -127,7 +170,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <GameContext.Provider value={{ gameState, initGame, cutWire, flipToggle, pressButton, resetPassword, generateAndAssign }}>
+    <GameContext.Provider value={{
+      gameState,
+      initGame,
+      cutWire,
+      flipToggle,
+      pressButton,
+      resetPassword,
+      generateAndAssign,
+      remainingTime,
+      totalTime,
+    }}>
       {children}
     </GameContext.Provider>
   );

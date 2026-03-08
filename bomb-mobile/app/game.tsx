@@ -1,16 +1,30 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useGame } from '../contexts/GameContext';
 
 export default function GameScreen() {
   const router = useRouter();
-  const { gameState, cutWire, flipToggle, pressButton, resetPassword } = useGame();
+  const { gameState, cutWire, flipToggle, pressButton, resetPassword, remainingTime, totalTime } = useGame();
+
+  // Animated rotation value updated when remainingTime changes
+  const rotation = useMemo(() => new Animated.Value(0), []);
+  useEffect(() => {
+    // compute angle: start at 0deg (top) and move clockwise proportionally
+    const tot = totalTime || 180;
+    const rem = Math.max(0, remainingTime);
+    const progress = 1 - rem / tot; // 0 -> start, 1 -> end
+    const angle = progress * 360;
+    Animated.timing(rotation, {
+      toValue: angle,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [remainingTime, totalTime]);
 
   useEffect(() => {
     // if no game running, go back to home
     if (!gameState?.running) {
-      // small delay so the user sees the message
       setTimeout(() => router.push('/'), 400);
     }
   }, [gameState?.running]);
@@ -21,32 +35,42 @@ export default function GameScreen() {
   const password = gameState?.password || [];
 
   const handleCutWire = async (i: number) => {
-    try {
-      await cutWire(i);
-    } catch (err) {
-      Alert.alert('Error', (err as Error)?.message || 'Failed to cut wire');
-    }
+    try { await cutWire(i); } catch (err) { Alert.alert('Error', (err as Error)?.message || 'Failed to cut wire'); }
   };
-
   const handleFlipToggle = async (label: string) => {
-    try {
-      await flipToggle(label);
-    } catch (err) {
-      Alert.alert('Error', (err as Error)?.message || 'Failed to flip toggle');
-    }
+    try { await flipToggle(label); } catch (err) { Alert.alert('Error', (err as Error)?.message || 'Failed to flip toggle'); }
+  };
+  const handlePressButton = async (key: string) => {
+    try { await pressButton(key); } catch (err) { Alert.alert('Error', (err as Error)?.message || 'Failed to press button'); }
   };
 
-  const handlePressButton = async (key: string) => {
-    try {
-      await pressButton(key);
-    } catch (err) {
-      Alert.alert('Error', (err as Error)?.message || 'Failed to press button');
-    }
+  // format mm:ss
+  const mmss = () => {
+    const s = Math.max(0, remainingTime || 0);
+    const mm = Math.floor(s / 60).toString().padStart(2, '0');
+    const ss = (s % 60).toString().padStart(2, '0');
+    return `${mm}:${ss}`;
   };
+
+  // rotation interpolation to transform string
+  const rotateInterpolate = rotation.interpolate({
+    inputRange: [0, 360],
+    outputRange: ['0deg', '360deg'],
+  });
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bomb Console</Text>
+
+      <View style={styles.timerRow}>
+        <View style={styles.analogWrap}>
+          <View style={styles.analogFace}>
+            <Animated.View style={[styles.hand, { transform: [{ rotate: rotateInterpolate }] }]} />
+            <View style={styles.centerDot} />
+          </View>
+          <Text style={styles.timerText}>{mmss()}</Text>
+        </View>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Wires</Text>
@@ -92,7 +116,7 @@ export default function GameScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Buttons (enter code)</Text>
         <View style={styles.keypad}>
-          {['1','2','3','4','5','6','7','8','9','0'].map((k) => (
+          {['1','2','3','4'].map((k) => (
             <TouchableOpacity
               key={k}
               style={[styles.key, buttons[k] ? styles.keyPressed : styles.keyIdle]}
@@ -126,6 +150,37 @@ const BLACK = '#111';
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1b1b1b', padding: 18 },
   title: { color: '#fff', fontSize: 20, fontWeight: '700', marginBottom: 12 },
+
+  timerRow: { marginBottom: 16, alignItems: 'center' },
+  analogWrap: { alignItems: 'center' },
+  analogFace: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: '#222',
+    borderWidth: 6,
+    borderColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hand: {
+    position: 'absolute',
+    width: 4,
+    height: 60,
+    backgroundColor: RED,
+    top: 10, // pivot near center-top
+    left: 68 - 2, // center horizontally (face 140 -> center 70, -half width)
+    borderRadius: 2,
+  },
+  centerDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#fff',
+    position: 'absolute',
+  },
+  timerText: { color: '#fff', marginTop: 8, fontWeight: '700' },
+
   section: { marginBottom: 18, backgroundColor: '#161616', padding: 12, borderRadius: 12 },
   sectionTitle: { color: '#ddd', fontSize: 14, fontWeight: '700', marginBottom: 10 },
   row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
