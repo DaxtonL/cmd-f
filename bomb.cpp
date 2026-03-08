@@ -11,10 +11,18 @@ bomb::bomb() {
     facts = {};
 }
 bomb::bomb(int numWires, int numToggles, int numButtons) {
+    vector<wire> pool;
     for (int i = 0; i < numWires; i++) {
         wire w;
-        w.setColor(colors[i]);
-        wires.push_back(w);
+        w.setColor(colors[i/2]);
+        pool.push_back(w);
+    }
+
+    mt19937 gen(std::random_device{}());
+    shuffle(pool.begin(), pool.end(), gen);
+
+    for (int i = 0; i < numWires; i++) {
+        wires.push_back(pool[i]);
     }
 
     for (int i = 0; i < numToggles; i++) {

@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <random>
+#include <algorithm>
 #include "wire.h"
 using namespace std;
 
@@ -40,7 +42,7 @@ class bomb{
         map<string, bool> buttons;      // true = pressed
         map<string, bool> facts;
         vector<string> password;
-        vector<string> colors = {"red", "blue", "green", "yellow", "orange"};
+        vector<string> colors = {"red", "blue", "green", "yellow", "orange", "purple"};
         vector<string> labels = {"explode", "hot", "on"};
         vector<string> keys = {"1", "2", "3", "4"};
 };

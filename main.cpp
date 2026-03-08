@@ -40,9 +40,9 @@ void printRules(vector<string> s) {
 
 int main() {
     bool run = true;
-    bomb b(5, 3, 4);
+    bomb b(6, 3, 4);
     solution s;
-    s.generate_solution(b, 5);
+    s.generate_solution(b, 6);
 
     vector<bool> wire_solution = s.getWireSolution();
     map<string, bool> toggle_solution = s.getToggleSolution();

@@ -10,7 +10,7 @@ void solution::generate_solution(bomb b, int n) {
         wire_solution.push_back(w);
     }
     while (n > 0) {
-        int i = n%4;
+        int i = 6-n;
         int x = findWire();
         vector<string> pass;
         mt19937 gen(std::random_device{}());
@@ -24,7 +24,6 @@ void solution::generate_solution(bomb b, int n) {
             // cut it, update solution
             if (x != -1) {
                 wire_solution[x].first.cutWire();
-                wire_solution[x].second = true;
                 s = "Cut wire " + to_string(x);
                 rules.push_back(s);
             }
@@ -56,13 +55,28 @@ void solution::generate_solution(bomb b, int n) {
             n--;
             break;
         case 3:
+            // Generate a toggle
             s = getToggle(b.getToggles());
             toggle_solution[s] = true;
             s.append(" should be on");
             rules.push_back(s);
             n--;
             break;
+        case 4:
+            s = pickColor(b.getWires());
+            for (int i = 0; i < wire_solution.size(); i++) {
+                if (wire_solution[i].first.getColor() == s) {
+                    if (wire_solution[i].second != true) {
+                        wire_solution[i].first.cutWire();
+                    }
+                }
+            }
+            s = "Cut all " + s + " wires";
+            rules.push_back(s);
+            n--;
+            break;
         default:
+            n--;
             break;
         }
     }
@@ -94,6 +108,10 @@ int solution::findWire() {
         }
     }
 
+    if (wires.empty()) {
+        return -1;
+    }
+
     random_device rd;                                    // 1
     mt19937 gen(rd());                                   // 2
     uniform_int_distribution<> dist(0, wires.size()-1);  // 3
@@ -112,7 +130,11 @@ string solution::getToggle(map<string,bool> toggles) {
     return t[dist(gen)];
 }
 
-string solution::pickColor(vector<string> colors) {
+string solution::pickColor(vector<wire> wires) {
+    vector<string> colors;
+    for (int i = 0; i < wires.size(); i++) {
+        colors.push_back(wires[i].getColor());
+    }
     mt19937 gen(std::random_device{}());
     uniform_int_distribution<> dist(0, colors.size()-1);
     return colors[dist(gen)];
@@ -138,4 +160,14 @@ bool solution::bombIsDetonated(bomb b) {
         }
     }
     return false;
+}
+
+vector<wire> solution::getWiresWithColor(string color, vector<wire> wires) {
+    vector<wire> c_wires;
+    for (int i = 0; i < wires.size(); i++) {
+        if (wires[i].getColor() == color) {
+            c_wires.push_back(wires[i]);
+        }
+    }
+    return c_wires;
 }

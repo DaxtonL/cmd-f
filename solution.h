@@ -31,6 +31,7 @@ class solution {
         map<string, bool> toggle_solution = {{"hot", true}, {"explode", true}, {"on", false}};
         vector<string> password_solution = { "1", "2", "3", "4"};
         vector<string> rules;
-        string pickColor(vector<string> colors);
+        string pickColor(vector<wire> wires);
         string getToggle(map<string,bool> toggles);
+        vector<wire> getWiresWithColor(string color, vector<wire> wires);
 };
