@@ -26,13 +26,14 @@ public:
 
     private : 
     
-    bomb current_bomb;
+    bomb current_bomb = bomb();
     solution current_solution;
 
-    int timer;
-    bool exploded;
-    bool defused;
-    bool running;
+    int timer = 0;
+    int num_players = 0;
+    bool exploded = false;
+    bool defused = false;
+    bool running = false;
 
     vector<bool> wire_solution;
     map<string, bool> toggle_solution;

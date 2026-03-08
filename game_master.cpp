@@ -44,10 +44,8 @@ game_master::game_master()
 void game_master::innit(int t)
 {
     // this contains the state of your game, such as positions and velocities
-    int timer = t; 
-    bomb current_bomb();
-    solution current_solution(current_bomb, num_players);
-
+    int timer = t;
+    current_solution.generate_solution(current_bomb, num_players);
 };
 
 bool game_master::handle_events()
