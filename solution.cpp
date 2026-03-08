@@ -75,6 +75,18 @@ void solution::generate_solution(bomb b, int n) {
             rules.push_back(s);
             n--;
             break;
+        case 5: {
+            uniform_int_distribution<> dist(0, wire_solution.size()-1);
+            int z = dist(gen);
+            s = pickColor(b.getWires());
+            if (wire_solution[z].first.getColor() == s) {
+                wire_solution[x].first.cutWire();
+            }
+            s = "If wire " + to_string(z) + " is " + s + " cut wire " + to_string(x);
+            rules.push_back(s);
+            n--;
+            break;
+        }
         default:
             n--;
             break;
