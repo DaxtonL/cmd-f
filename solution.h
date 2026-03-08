@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "bomb.h"
 #include "wire.h"
+#include "player.h"
 using namespace std;
 
 class solution {
