@@ -6,7 +6,7 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
 TARGET = main
 
 # Source files
-SRC = main.cpp bomb.cpp game_master.cpp player.cpp solution.cpp wire.cpp
+SRC = main.cpp bomb.cpp player.cpp solution.cpp wire.cpp
 
 # Object directory
 OBJDIR = build

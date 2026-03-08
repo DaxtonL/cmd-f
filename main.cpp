@@ -2,8 +2,8 @@
 #include <vector>
 #include <string>
 #include <map>
-#include "bomb.cpp"
-#include "solution.cpp"
+#include "bomb.h"
+#include "solution.h"
 using namespace std;
 
 void printInfo(bomb b) {
@@ -13,7 +13,7 @@ void printInfo(bomb b) {
     vector<string> password = b.getPassword();
     for (int i = 0; i < wires.size(); i++) {
         wire w = b.getWires()[i];
-        cout << "Wire " << i << " " << w.getColor() << " cut:" << w.getIscut() << endl; 
+        cout << "Wire " << i << " " << w.getColor() << " cut:" << boolalpha << w.getIscut() << endl; 
     }
     cout << endl;
     for (const auto& [key, value] : toggles) {
@@ -40,7 +40,7 @@ void printRules(vector<string> s) {
 
 int main() {
     bool run = true;
-    vector<string> colors = {"red", "blue", "green"};
+    vector<string> colors = {"red", "blue", "green", "yellow", "purplee"};
     vector<string> labels = {"hot", "explode", "on"};
     vector<string> keys = {"1", "2", "3", "4"};
     map<string, bool> rules;

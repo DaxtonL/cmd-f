@@ -1,31 +1,24 @@
 #include <string>
+#include "wire.h"
 using namespace std;
 
-class wire {
-    public:
-        wire() {
-            color = "NO SET COLOR";
-            cut = false;
-        }
+wire::wire() {
+    color = "NO SET COLOR";
+    cut = false;
+}
 
-        void cutWire() {
-            cut = true;
-        }
+void wire::cutWire() {
+    cut = true;
+}
 
-        bool getIscut() {
-            return cut;
-        }
+bool wire::getIscut() {
+    return cut;
+}
 
-        void setColor(string s) {
-            color = s;
-        }
+void wire::setColor(string s) {
+    color = s;
+}
 
-        string getColor() {
-            return color;
-        }
-    
-    private:
-
-    string color;
-    bool cut;
-};
+string wire::getColor() {
+    return color;
+}
