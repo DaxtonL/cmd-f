@@ -5,11 +5,11 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
 # Target executable
 TARGET = main
 
-# Choose which main file to use
-MODE ?= normal
+# Debug toggle (0 = normal, 1 = debug)
+DEBUG ?= 0
 
-ifeq ($(MODE),game)
-MAIN = game_master.cpp
+ifeq ($(DEBUG),1)
+MAIN = debug.cpp
 else
 MAIN = main.cpp
 endif
