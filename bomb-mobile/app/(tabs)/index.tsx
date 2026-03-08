@@ -1,98 +1,102 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import React, { useState } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const [timer, setTimer] = useState(60);
+  const [wireCut, setWireCut] = useState(false);
+  const [toggleOn, setToggleOn] = useState(false);
+  const [buttonPressed, setButtonPressed] = useState(false);
+  const [message, setMessage] = useState("Bomb UI loaded");
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  function decreaseTimer() {
+    setTimer((prev) => prev - 1);
+    setMessage("Timer decreased");
+  }
+
+  function cutWire() {
+    setWireCut(true);
+    setMessage("Wire cut");
+  }
+
+  function flipToggle() {
+    setToggleOn((prev) => !prev);
+    setMessage("Toggle flipped");
+  }
+
+  function pressButton() {
+    setButtonPressed(true);
+    setMessage("Button pressed");
+  }
+
+  function resetBomb() {
+    setTimer(60);
+    setWireCut(false);
+    setToggleOn(false);
+    setButtonPressed(false);
+    setMessage("Bomb reset");
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Dummy Bomb Screen</Text>
+
+      <Text style={styles.text}>Timer: {timer}</Text>
+      <Text style={styles.text}>Wire cut: {wireCut ? "true" : "false"}</Text>
+      <Text style={styles.text}>Toggle on: {toggleOn ? "true" : "false"}</Text>
+      <Text style={styles.text}>Button pressed: {buttonPressed ? "true" : "false"}</Text>
+      <Text style={styles.text}>Message: {message}</Text>
+
+      <Pressable style={styles.button} onPress={decreaseTimer}>
+        <Text style={styles.buttonText}>Decrease Timer</Text>
+      </Pressable>
+
+      <Pressable style={styles.button} onPress={cutWire}>
+        <Text style={styles.buttonText}>Cut Wire</Text>
+      </Pressable>
+
+      <Pressable style={styles.button} onPress={flipToggle}>
+        <Text style={styles.buttonText}>Flip Toggle</Text>
+      </Pressable>
+
+      <Pressable style={styles.button} onPress={pressButton}>
+        <Text style={styles.buttonText}>Press Button</Text>
+      </Pressable>
+
+      <Pressable style={styles.button} onPress={resetBomb}>
+        <Text style={styles.buttonText}>Reset</Text>
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+    justifyContent: "center",
+    padding: 24,
+    gap: 12,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "black",
+    marginBottom: 12,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  text: {
+    fontSize: 16,
+    color: "black",
+  },
+  button: {
+    backgroundColor: "#dddddd",
+    borderWidth: 1,
+    borderColor: "black",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  buttonText: {
+    color: "black",
+    fontSize: 16,
   },
 });
