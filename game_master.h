@@ -10,7 +10,8 @@ using namespace std;
 
 class game_master {
 public:
-    game_master(int t);
+    game_master();
+    innit(int t);
 
     void setupGame();
     void printInfo() const;
