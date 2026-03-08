@@ -19,7 +19,6 @@ class solution {
         vector<string> getRules();
 
     private:
-        // returns a changeable wire that hasn't been cut
         int findWire();
         bool cutWireRule();
         bool neverCutWireRule();
@@ -30,9 +29,9 @@ class solution {
 
         vector<bool> getWireSolution();
         vector<string> getPassword();
-        vector<pair<wire, bool>> wire_solution; // second bool represents if wire can be changed
-        map<string, bool> toggle_solution = {{"hot", true}, {"explode", true}, {"on", false}};
-        vector<string> password_solution = { "1", "2", "3", "4"};
+        vector<pair<wire, bool>> wire_solution;
+        map<string, bool> toggle_solution;
+        vector<string> password_solution;
         vector<string> rules;
         string pickColor(vector<wire> wires);        
 };

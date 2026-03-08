@@ -37,7 +37,7 @@ bomb::bomb(int numWires, int numToggles, int numButtons) {
 // if the wire is not cut, cut it
 // returns true if there is a wire to cuts
 bool bomb::cutWire(int n) {
-    if (n < wires.size()) {
+    if (n < (int)wires.size()) {
         wires[n].cutWire();
         return true;
     }
@@ -85,7 +85,7 @@ void bomb::resetButtons() {
 }
 
 bool bomb::compareWires(vector<bool> solution) {
-    for (int i = 0; i < solution.size(); i++) {
+    for (int i = 0; i < (int)solution.size(); i++) {
         if (wires[i].getIscut() != solution[i]) {
             return false;
         }
