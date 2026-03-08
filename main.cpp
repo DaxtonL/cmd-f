@@ -46,10 +46,10 @@ int main() {
     map<string, bool> rules;
     bomb b(colors, labels, keys, rules);
     solution s;
-    s.generate_solution(b, 4);
+    s.generate_solution(b, 5);
 
     vector<bool> wire_solution = s.getWireSolution();
-    map<string, bool> toggle_solution = {{"hot", true}, {"explode", true}, {"on", false}};
+    map<string, bool> toggle_solution = s.getToggleSolution();
     vector<string> password_solution = s.getPassword();
 
     printRules(s.getRules());

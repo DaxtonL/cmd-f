@@ -9,11 +9,12 @@ void solution::generate_solution(bomb b, int n) {
         wire_solution.push_back(w);
     }
     while (n > 0) {
-        int i = n%3;
+        int i = n%4;
         int x = findWire();
         vector<string> pass;
         mt19937 gen(std::random_device{}());
         string s;
+        bool color_flag = false;
         switch (i)
         {
         case 0:
@@ -25,8 +26,8 @@ void solution::generate_solution(bomb b, int n) {
                 wire_solution[x].second = true;
                 s = "Cut wire " + to_string(x);
                 rules.push_back(s);
-                n--;
             }
+            n--;
             break;
         case 1:
             // never cut a wire
@@ -36,8 +37,8 @@ void solution::generate_solution(bomb b, int n) {
                 wire_solution[x].second = true;
                 s = "Never cut wire " + to_string(x);
                 rules.push_back(s);
-                n--;
             }
+            n--;
             break;
         case 2:
             // generate password
@@ -54,15 +55,13 @@ void solution::generate_solution(bomb b, int n) {
             n--;
             break;
         case 3:
-            // generate password
-            for (auto& pair : b.getButtons()) {
-                pass.push_back(pair.first);
-            }
-            shuffle(pass.begin(), pass.end(), gen);
-            s = "Password is: ";
-            password_solution = pass;
-            for (int i = 0; i < password_solution.size(); i++) {
-                s.append(password_solution[i]);
+            s = getToggle(b.getToggles());
+            if (n%2 == 0) {
+                toggle_solution[s] = true;
+                s.append(" should be on");
+            } else {
+                toggle_solution[s] = false;
+                s.append(" should be off");
             }
             rules.push_back(s);
             n--;
@@ -106,8 +105,23 @@ int solution::findWire() {
     return wires[z];
 }
 
+string solution::getToggle(map<string,bool> toggles) {
+    vector<string> t;
+    for (auto& pair : toggles) {
+        t.push_back(pair.first);
+    }
+    
+    mt19937 gen(std::random_device{}());
+    uniform_int_distribution<> dist(0, t.size()-1);
+    return t[dist(gen)];
+}
+
 string solution::pickColor(vector<string> colors) {
     mt19937 gen(std::random_device{}());
     uniform_int_distribution<> dist(0, colors.size()-1);
     return colors[dist(gen)];
+}
+
+map<string, bool> solution::getToggleSolution() {
+    return toggle_solution;
 }

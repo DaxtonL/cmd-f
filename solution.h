@@ -15,8 +15,9 @@ class solution {
         vector<bool> getWireSolution();
 
         vector<string> getRules();
-
         vector<string> getPassword();
+        map<string, bool> getToggleSolution();
+
 
     private:
         // returns a changeable wire that hasn't been cut
@@ -27,4 +28,5 @@ class solution {
         vector<string> password_solution = { "1", "2", "3", "4"};
         vector<string> rules;
         string pickColor(vector<string> colors);
+        string getToggle(map<string,bool> toggles);
 };
