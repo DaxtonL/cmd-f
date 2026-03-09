@@ -4,7 +4,7 @@
 
 namespace {
 bomb make_bomb() {
-    return bomb(5, 3, 4);
+    return bomb(6, 3, 4);
 }
 }
 
@@ -16,7 +16,8 @@ void game_master::innit(int t, int n) {
 
     current_bomb = make_bomb();
     current_solution = solution();
-    current_solution.generate_solution(current_bomb, num_players);
+    // Build one solution rule per player from the generated bomb solution.
+    current_solution.generateSolution(current_bomb, num_players);
 
     rules = current_solution.getRules();
     players = make_players(num_players, rules);
@@ -99,14 +100,8 @@ vector<player> game_master::make_players(int n, const vector<string>& rule_list)
 
     for (int i = 0; i < n; i++) {
         vector<string> player_rules;
-        int first_rule = i * 2;
-        int second_rule = first_rule + 1;
-
-        if (first_rule < static_cast<int>(rule_list.size())) {
-            player_rules.push_back(rule_list[first_rule]);
-        }
-        if (second_rule < static_cast<int>(rule_list.size())) {
-            player_rules.push_back(rule_list[second_rule]);
+        if (i < static_cast<int>(rule_list.size())) {
+            player_rules.push_back(rule_list[i]);
         }
         if (player_rules.empty()) {
             player_rules.push_back("No rule assigned");

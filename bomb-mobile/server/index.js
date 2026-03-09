@@ -1,33 +1,96 @@
 const express = require('express');
 const cors = require('cors');
-
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const COLORS = ['red', 'blue', 'green', 'yellow', 'orange', 'purple'];
+const COLORS = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'white', 'black'];
 
 let state = null;
 
-function makeGame(timer = 180, numPlayers = 2, gameMode = 'classic') {
-  const wires = Array.from({ length: 4 }, (_, i) => ({
+// Helper: create a bomb object with getters (a, b, c are numeric parameters)
+function createBomb(a = 6, b = 3, c = 4) {
+  // internal representation
+  const wires = Array.from({ length: 6 }, (_, i) => ({
     id: i,
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     cut: false,
   }));
 
-  const toggles = { A: false, B: false, C: false };
-  const buttons = { '1': false, '2': false, '3': false, '4': false };
+  const toggles = { A: false, B: false, C: false }; // 3 toggles
+  const buttons = { '1': false, '2': false, '3': false, '4': false }; // 4 buttons
+
+  // provide getter-style access for server-side logic
+  const bomb = {
+    a, b, c,
+    wires,
+    toggles,
+    buttons,
+    getNumWires() { return this.wires.length; },
+    getNumToggles() { return Object.keys(this.toggles).length; },
+    getNumButtons() { return Object.keys(this.buttons).length; },
+    getA() { return this.a; },
+    getB() { return this.b; },
+    getC() { return this.c; },
+  };
+
+  return bomb;
+}
+
+// Simple solution generator that "uses getters" from bomb to produce rules
+function generateSolutionForBomb(bomb) {
+  // simulate more complex logic by reading bomb getters
+  const a = bomb.getA();
+  const b = bomb.getB();
+  const c = bomb.getC();
+  const nWires = bomb.getNumWires();
+  const nToggles = bomb.getNumToggles();
+  const nButtons = bomb.getNumButtons();
+
+  // Create a list of textual rules that reference bomb fields
+  const rules = [];
+
+  // rule examples - keep deterministic-ish but varied
+  rules.push(`Cut the ${bomb.wires[0]?.color || 'first'} wire if A=${a}`);
+  rules.push(`Press button 1 if B=${b}`);
+  rules.push(`Flip toggle A ${a % 2 === 0 ? 'ON' : 'OFF'}`);
+  rules.push(`Do not press button 4 if C=${c}`);
+  rules.push(`Cut the ${bomb.wires[nWires - 1]?.color || 'last'} wire`);
+  rules.push(`If toggles B+C are false, press button 2`);
+  // Add more filler rules up to a reasonable number
+  for (let i = rules.length; i < Math.max(6, nWires); i++) {
+    rules.push(`Step ${i + 1}: check bomb fields a=${a},b=${b},c=${c}`);
+  }
+
+  // Return object that mimics a solution module with getters
+  return {
+    generatedAt: Date.now(),
+    getSolution() { return this; },
+    getRules() { return rules; },
+    rules,
+  };
+}
+
+function makeGame(timer = 180, numPlayers = 2, gameMode = 'classic') {
+  const wires = Array.from({ length: 6 }, (_, i) => ({
+    id: i,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    cut: false,
+  }));
+
+  const toggles = { A: false, B: false, C: false }; // 3 toggles
+  const buttons = { '1': false, '2': false, '3': false, '4': false }; // 4 buttons
+
   const rules = Array.from({ length: numPlayers * 2 }, (_, i) => `Rule ${i + 1}`);
   const players = Array.from({ length: numPlayers }, (_, i) => ({
     name: `Player ${i + 1}`,
-    rules: [rules[i * 2] || '', rules[i * 2 + 1] || ''],
+    rules: [], // will be filled by generateAssign
   }));
-
   return {
     timer,
     numPlayers,
     gameMode,
+    hardMode: false,
     wires,
     toggles,
     buttons,
@@ -37,143 +100,131 @@ function makeGame(timer = 180, numPlayers = 2, gameMode = 'classic') {
     exploded: false,
     defused: false,
     running: true,
+    // placeholders for bomb/solution
+    bomb: null,
+    solution: null,
   };
 }
 
-function ensureState(res) {
-  if (!state) {
-    res.status(400).json({ error: 'Game not initialized. Call POST /init first.' });
-    return false;
-  }
-  return true;
-}
+app.get('/', (req, res) => {
+  res.type('json').send({
+    message:
+      'Bomb-mobile backend running. Use POST /init to create a game, then GET /state. Available endpoints: /init, /state, /cutWire, /flipToggle, /pressButton, /resetPassword, /generateAssign',
+  });
+});
 
-app.post(['/init', '/api/init'], (req, res) => {
+app.post('/init', (req, res) => {
   const { timer = 180, numPlayers = 2, gameMode = 'classic', hardMode = false } = req.body || {};
   state = makeGame(timer, numPlayers, gameMode);
   state.hardMode = !!hardMode;
   res.json(state);
 });
 
-app.get(['/state', '/api/state'], (req, res) => {
-  if (!ensureState(res)) return;
+app.get('/state', (req, res) => {
+  if (!state) return res.status(400).json({ error: 'Game not initialized' });
   res.json(state);
 });
 
-app.post(['/cutWire', '/api/cut-wire'], (req, res) => {
-  if (!ensureState(res)) return;
-
-  const idx = Number(req.body?.index);
+app.post('/cutWire', (req, res) => {
+  const { index } = req.body || {};
+  if (!state) return res.status(400).json({ error: 'Game not initialized' });
+  const idx = Number(index);
   if (Number.isInteger(idx) && idx >= 0 && idx < state.wires.length) {
     state.wires[idx].cut = true;
+
+    // If all wires are cut, mark detonated / exploded immediately
+    const allCut = Array.isArray(state.wires) && state.wires.length > 0 && state.wires.every(w => !!w.cut);
+    if (allCut) {
+      // mark solution / state as detonated / exploded
+      if (!state.solution) state.solution = {};
+      state.solution.detonated = true;
+      state.exploded = true;
+      state.running = false;
+    }
+
+    // Evaluate other solution conditions if present
+    if (typeof evaluateSolutionState === 'function') {
+      try { evaluateSolutionState(); } catch (e) { /* ignore */ }
+    }
+
     return res.json(state);
   }
-
-  return res.status(400).json({ error: 'Invalid wire index' });
+  return res.status(400).json({ error: 'invalid index' });
 });
 
-app.post(['/flipToggle', '/api/flip-toggle'], (req, res) => {
-  if (!ensureState(res)) return;
-
-  const label = String(req.body?.label || '').trim();
+app.post('/flipToggle', (req, res) => {
+  const { label } = req.body || {};
+  if (!state) return res.status(400).json({ error: 'Game not initialized' });
   if (label in state.toggles) {
     state.toggles[label] = !state.toggles[label];
     return res.json(state);
   }
-
-  return res.status(400).json({ error: 'Invalid toggle label' });
+  return res.status(400).json({ error: 'invalid toggle' });
 });
 
-app.post(['/pressButton', '/api/press-button'], (req, res) => {
-  if (!ensureState(res)) return;
-
-  const key = String(req.body?.key || '').trim();
-  if (!(key in state.buttons)) {
-    return res.status(400).json({ error: 'Invalid button key' });
-  }
-
-  if (!state.buttons[key] && state.password.length < 4) {
+app.post('/pressButton', (req, res) => {
+  const { key } = req.body || {};
+  if (!state) return res.status(400).json({ error: 'Game not initialized' });
+  if (!(key in state.buttons)) return res.status(400).json({ error: 'invalid button' });
+  if (!state.buttons[key] && state.password.length < 8) {
     state.password.push(key);
     state.buttons[key] = true;
   }
-
   return res.json(state);
 });
 
-app.post(['/resetPassword', '/api/reset-password'], (req, res) => {
-  if (!ensureState(res)) return;
-
+app.post('/resetPassword', (req, res) => {
+  if (!state) return res.status(400).json({ error: 'Game not initialized' });
   state.password = [];
-  Object.keys(state.buttons).forEach((k) => {
-    state.buttons[k] = false;
+  Object.keys(state.buttons).forEach((k) => (state.buttons[k] = false));
+  return res.json(state);
+});
+
+// New endpoint: create a bomb with params (6,3,4), generate a solution, and assign one rule per player
+app.post('/generateAssign', (req, res) => {
+  if (!state) return res.status(400).json({ error: 'Game not initialized' });
+
+  // create bomb field with parameters 6,3,4 (user requested values)
+  const bomb = createBomb(6, 3, 4);
+  state.bomb = {
+    // serialize bomb metadata for client inspection
+    a: bomb.a,
+    b: bomb.b,
+    c: bomb.c,
+    numWires: bomb.getNumWires(),
+    numToggles: bomb.getNumToggles(),
+    numButtons: bomb.getNumButtons(),
+    wires: bomb.wires.map(w => ({ id: w.id, color: w.color, cut: w.cut })),
+    toggles: { ...bomb.toggles },
+    buttons: { ...bomb.buttons },
+    createdAt: Date.now(),
+  };
+
+  // generate solution server-side using bomb getters
+  const solution = generateSolutionForBomb(bomb);
+  state.solution = {
+    generatedAt: solution.generatedAt,
+    rules: solution.getRules(),
+  };
+
+  // assign one part of the solution to each player
+  state.players = (state.players || Array.from({ length: state.numPlayers }, (_, i) => ({ name: `Player ${i + 1}`, rules: [] }))).map((p, i) => {
+    const assigned = state.solution.rules[i] || '';
+    return {
+      ...p,
+      rules: assigned ? [assigned] : [],
+    };
   });
 
+  // Also reflect the bomb/solution in top-level state for client
+  state.wires = state.bomb.wires;
+  state.toggles = state.bomb.toggles;
+  state.buttons = state.bomb.buttons;
+
   return res.json(state);
 });
 
-app.get('/', (req, res) => {
-  res.type('html').send(`<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bomb Backend Tester</title>
-  <style>
-    body { font-family: sans-serif; margin: 20px; background: #1f1f1f; color: #f0f0f0; }
-    button { margin: 4px; padding: 8px 12px; }
-    .row { margin-bottom: 10px; }
-    pre { background: #111; padding: 12px; border-radius: 8px; overflow: auto; }
-  </style>
-</head>
-<body>
-  <h1>Bomb Backend Tester</h1>
-  <div class="row">
-    <button onclick="initGame()">Init Game</button>
-    <button onclick="fetchState()">Get State</button>
-    <button onclick="resetPassword()">Reset Password</button>
-  </div>
-  <div class="row">
-    <button onclick="cutWire(0)">Cut Wire 0</button>
-    <button onclick="cutWire(1)">Cut Wire 1</button>
-    <button onclick="cutWire(2)">Cut Wire 2</button>
-    <button onclick="cutWire(3)">Cut Wire 3</button>
-  </div>
-  <div class="row">
-    <button onclick="flipToggle('A')">Flip A</button>
-    <button onclick="flipToggle('B')">Flip B</button>
-    <button onclick="flipToggle('C')">Flip C</button>
-  </div>
-  <div class="row">
-    <button onclick="pressButton('1')">Press 1</button>
-    <button onclick="pressButton('2')">Press 2</button>
-    <button onclick="pressButton('3')">Press 3</button>
-    <button onclick="pressButton('4')">Press 4</button>
-  </div>
-  <pre id="out">Click Init Game to start.</pre>
-
-  <script>
-    async function call(path, body) {
-      const res = await fetch(path, {
-        method: body ? 'POST' : 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-      const json = await res.json();
-      document.getElementById('out').textContent = JSON.stringify(json, null, 2);
-    }
-
-    function initGame() { return call('/init', { timer: 180, numPlayers: 2, gameMode: 'classic' }); }
-    function fetchState() { return call('/state'); }
-    function cutWire(index) { return call('/cutWire', { index }); }
-    function flipToggle(label) { return call('/flipToggle', { label }); }
-    function pressButton(key) { return call('/pressButton', { key }); }
-    function resetPassword() { return call('/resetPassword', {}); }
-  </script>
-</body>
-</html>`);
-});
-
-const port = Number(process.env.PORT || 3000);
-app.listen(port, '0.0.0.0', () => {
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
   console.log(`Backend server listening on http://0.0.0.0:${port}`);
 });

@@ -12,10 +12,10 @@ export default function HomeScreen() {
   const [hardMode, setHardMode] = useState(false);
 
   const handleStartGame = async () => {
-    const timer = hardMode ? 120 : 180;
+  const timer = hardMode ? 120 : 180;
     try {
       await initGame(timer, numPlayers, gameMode);
-      router.push('/game');
+      router.push('/player-rules');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to start game');
     }

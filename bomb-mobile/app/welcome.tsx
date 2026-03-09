@@ -21,7 +21,7 @@ export default function WelcomeScreen() {
         }),
       ])
     ).start();
-  }, []);
+  }, [fadeAnim]);
 
   return (
     <TouchableOpacity 
@@ -40,7 +40,7 @@ export default function WelcomeScreen() {
       </View>
       
       <View style={styles.textContainer}>
-        <Text style={styles.title}>don't</Text>
+        <Text style={styles.title}>{"don't"}</Text>
         <Text style={styles.subtitle}>explode...</Text>
       </View>
 

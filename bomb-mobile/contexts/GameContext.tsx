@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 
 import { BackendGameState, gameApi, Wire } from '../lib/gameApi';
 
@@ -17,7 +17,7 @@ interface GameState {
   running: boolean;
 }
 
-interface GameContextType {
+export interface GameContextType {
   gameState: GameState;
   initGame: (timer: number, numPlayers: number, gameMode: 'classic' | 'online') => Promise<void>;
   cutWire: (index: number) => Promise<void>;
@@ -25,6 +25,8 @@ interface GameContextType {
   pressButton: (key: string) => Promise<void>;
   resetPassword: () => Promise<void>;
   refreshState: () => Promise<void>;
+  remainingTime: number;
+  totalTime: number;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -62,13 +64,51 @@ export function GameProvider({ children }: { children: ReactNode }) {
     running: false,
   });
 
+  const [remainingTime, setRemainingTime] = useState<number>(0);
+  const [totalTime, setTotalTime] = useState<number>(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  const startLocalCountdown = useCallback((seconds: number) => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    setTotalTime(seconds);
+    setRemainingTime(seconds);
+
+    intervalRef.current = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
   const initGame = useCallback(async (timer: number, numPlayers: number, gameMode: 'classic' | 'online') => {
     const backend = await gameApi.init(timer, numPlayers);
     setGameState((prev) => ({
       ...toGameState(prev, backend),
       gameMode,
     }));
-  }, []);
+
+    const startSeconds = typeof timer === 'number' && timer > 0 ? timer : backend.timer;
+    startLocalCountdown(startSeconds || 180);
+  }, [startLocalCountdown]);
 
   const refreshState = useCallback(async () => {
     const backend = await gameApi.state();
@@ -96,7 +136,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <GameContext.Provider value={{ gameState, initGame, cutWire, flipToggle, pressButton, resetPassword, refreshState }}>
+    <GameContext.Provider value={{
+      gameState,
+      initGame,
+      cutWire,
+      flipToggle,
+      pressButton,
+      resetPassword,
+      refreshState,
+      remainingTime,
+      totalTime,
+    }}>
       {children}
     </GameContext.Provider>
   );

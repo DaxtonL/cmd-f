@@ -8,7 +8,10 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="welcome" />
         <Stack.Screen name="home" />
+        <Stack.Screen name="player-rules" />
         <Stack.Screen name="game" />
+        <Stack.Screen name="bomb-defused" />
+        <Stack.Screen name="game-over" />
       </Stack>
     </GameProvider>
   );
