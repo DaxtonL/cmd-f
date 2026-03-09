@@ -131,6 +131,22 @@ app.post('/cutWire', (req, res) => {
   const idx = Number(index);
   if (Number.isInteger(idx) && idx >= 0 && idx < state.wires.length) {
     state.wires[idx].cut = true;
+
+    // If all wires are cut, mark detonated / exploded immediately
+    const allCut = Array.isArray(state.wires) && state.wires.length > 0 && state.wires.every(w => !!w.cut);
+    if (allCut) {
+      // mark solution / state as detonated / exploded
+      if (!state.solution) state.solution = {};
+      state.solution.detonated = true;
+      state.exploded = true;
+      state.running = false;
+    }
+
+    // Evaluate other solution conditions if present
+    if (typeof evaluateSolutionState === 'function') {
+      try { evaluateSolutionState(); } catch (e) { /* ignore */ }
+    }
+
     return res.json(state);
   }
   return res.status(400).json({ error: 'invalid index' });

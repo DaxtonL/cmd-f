@@ -1,0 +1,75 @@
+:root {
+  color-scheme: only light;
+  --ink: #0a0a0a;
+  --paper: #f6f1e7;
+  --white: #fdfdfd;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  background: radial-gradient(circle at top, #f9f4ec 0%, #e7dccd 45%, #cbb8a3 100%);
+  display: grid;
+  place-items: center;
+  padding: 28px;
+}
+
+.page {
+  width: min(420px, 92vw);
+}
+
+.poster {
+  width: 100%;
+  background: var(--ink);
+  border-radius: 52px;
+  box-shadow: 0 24px 60px var(--shadow);
+  overflow: hidden;
+  animation: poster-rise 700ms ease-out both;
+}
+
+.poster-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.poster-title {
+  fill: var(--white);
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.poster-subtitle {
+  fill: #808080;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+@keyframes poster-rise {
+  from {
+    transform: translateY(14px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 18px;
+  }
+
+  .poster {
+    border-radius: 42px;
+  }
+}

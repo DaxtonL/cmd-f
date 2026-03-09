@@ -5,14 +5,27 @@ import { useGame } from '../contexts/GameContext';
 
 export default function GameScreen() {
   const router = useRouter();
-  const { gameState, cutWire, flipToggle, pressButton, resetPassword, remainingTime, totalTime } = useGame();
+  const { gameState, cutWire, flipToggle, pressButton, resetPassword, remainingTime } = useGame();
 
   useEffect(() => {
-    // if no game running, go back to home
-    if (!gameState?.running) {
-      setTimeout(() => router.push('/'), 400);
+    if (gameState?.exploded) {
+      router.push('/game-over');
+      return;
     }
-  }, [gameState?.running]);
+    if (gameState?.defused) {
+      router.push('/bomb-defused');
+      return;
+    }
+
+    // client-side safety: if all wires are cut, navigate to game over
+    if (Array.isArray(gameState?.wires) && gameState.wires.length > 0) {
+      const allCut = gameState.wires.every(w => !!w.cut);
+      if (allCut) {
+        router.push('/game-over');
+        return;
+      }
+    }
+  }, [gameState?.exploded, gameState?.defused, gameState?.wires, router]);
 
   const wires = gameState?.wires || [];
   const toggles = gameState?.toggles || {};

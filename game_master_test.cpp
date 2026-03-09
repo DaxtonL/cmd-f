@@ -75,7 +75,7 @@ void test_get_bomb_has_expected_sizes() {
 
     bomb b = gm.getBomb();
 
-    assert(b.getWires().size() == 5);
+    assert(b.getWires().size() == 6);
     assert(b.getToggles().size() == 3);
     assert(b.getButtons().size() == 4);
 

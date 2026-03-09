@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 
 import { BackendGameState, gameApi, Wire } from '../lib/gameApi';
 
@@ -19,21 +19,34 @@ interface GameState {
 
 export interface GameContextType {
   gameState: GameState;
-  initGame: (timer: number, numPlayers: number, gameMode: 'classic' | 'online', hardMode?: boolean) => Promise<void>;
+  initGame: (timer: number, numPlayers: number, gameMode: 'classic' | 'online') => Promise<void>;
   cutWire: (index: number) => Promise<void>;
   flipToggle: (label: string) => Promise<void>;
   pressButton: (key: string) => Promise<void>;
   resetPassword: () => Promise<void>;
-  generateAndAssign?: () => Promise<void>;
-  // new timer fields
+  refreshState: () => Promise<void>;
   remainingTime: number;
   totalTime: number;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-// Set this to your machine LAN IP when using Expo Go on a device, e.g. "http://192.168.1.42:3000"
-const serverUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+function toGameState(prev: GameState, backend: BackendGameState): GameState {
+  return {
+    ...prev,
+    timer: backend.timer,
+    numPlayers: backend.numPlayers,
+    wires: backend.wires,
+    toggles: backend.toggles,
+    buttons: backend.buttons,
+    password: backend.password,
+    rules: backend.rules,
+    players: backend.players,
+    exploded: backend.exploded,
+    defused: backend.defused,
+    running: backend.running,
+  };
+}
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, setGameState] = useState<GameState>({
@@ -51,24 +64,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
     running: false,
   });
 
-  // timer state
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ensure interval cleared on unmount
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
   }, []);
 
-  const startLocalCountdown = (seconds: number) => {
-    // clear any previous interval
+  const startLocalCountdown = useCallback((seconds: number) => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+
     setTotalTime(seconds);
     setRemainingTime(seconds);
 
@@ -84,90 +97,43 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return prev - 1;
       });
     }, 1000);
-  };
+  }, []);
 
-  const initGame = async (timer: number, numPlayers: number, gameMode: 'classic' | 'online', hardMode = false) => {
-    const resp = await fetch(`${serverUrl}/init`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ timer, numPlayers, gameMode, hardMode }),
-    });
-    if (!resp.ok) {
-      const txt = await resp.text();
-      throw new Error(`Failed to initialize game backend: ${txt}`);
-    }
-    const json = await resp.json();
-    setGameState(json);
+  const initGame = useCallback(async (timer: number, numPlayers: number, gameMode: 'classic' | 'online') => {
+    const backend = await gameApi.init(timer, numPlayers);
+    setGameState((prev) => ({
+      ...toGameState(prev, backend),
+      gameMode,
+    }));
 
-    // start the local countdown immediately with the requested timer
-    // default to 180s if backend didn't provide
-    const startSeconds = typeof timer === 'number' && timer > 0 ? timer : (json.timer || 180);
-    startLocalCountdown(startSeconds);
-  };
+    const startSeconds = typeof timer === 'number' && timer > 0 ? timer : backend.timer;
+    startLocalCountdown(startSeconds || 180);
+  }, [startLocalCountdown]);
 
-  const fetchState = async () => {
-    const resp = await fetch(`${serverUrl}/state`);
-    if (!resp.ok) return;
-    const json = await resp.json();
-    setGameState(json);
-  };
+  const refreshState = useCallback(async () => {
+    const backend = await gameApi.state();
+    setGameState((prev) => toGameState(prev, backend));
+  }, []);
 
-  const cutWire = async (index: number) => {
-    const resp = await fetch(`${serverUrl}/cutWire`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ index }),
-    });
-    if (!resp.ok) return;
-    const json = await resp.json();
-    setGameState(json);
-  };
+  const cutWire = useCallback(async (index: number) => {
+    const backend = await gameApi.cutWire(index);
+    setGameState((prev) => toGameState(prev, backend));
+  }, []);
 
-  const flipToggle = async (label: string) => {
-    const resp = await fetch(`${serverUrl}/flipToggle`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ label }),
-    });
-    if (!resp.ok) return;
-    const json = await resp.json();
-    setGameState(json);
-  };
+  const flipToggle = useCallback(async (label: string) => {
+    const backend = await gameApi.flipToggle(label);
+    setGameState((prev) => toGameState(prev, backend));
+  }, []);
 
-  const pressButton = async (key: string) => {
-    const resp = await fetch(`${serverUrl}/pressButton`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key }),
-    });
-    if (!resp.ok) return;
-    const json = await resp.json();
-    setGameState(json);
-  };
+  const pressButton = useCallback(async (key: string) => {
+    const backend = await gameApi.pressButton(key);
+    setGameState((prev) => toGameState(prev, backend));
+  }, []);
 
-  const resetPassword = async () => {
-    const resp = await fetch(`${serverUrl}/resetPassword`, {
-      method: 'POST',
-    });
-    if (!resp.ok) return;
-    const json = await resp.json();
-    setGameState(json);
-  };
-
-  // create bomb(6,3,4), generate solution, assign one rule per player
-  const generateAndAssign = async () => {
-    const resp = await fetch(`${serverUrl}/generateAssign`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    });
-    if (!resp.ok) {
-      const txt = await resp.text();
-      throw new Error(`generateAssign failed: ${txt}`);
-    }
-    const json = await resp.json();
-    setGameState(json);
-  };
+  const resetPassword = useCallback(async () => {
+    const backend = await gameApi.resetPassword();
+    setGameState((prev) => toGameState(prev, backend));
+  }, []);
 
   return (
     <GameContext.Provider value={{
@@ -177,7 +143,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       flipToggle,
       pressButton,
       resetPassword,
-      generateAndAssign,
+      refreshState,
       remainingTime,
       totalTime,
     }}>
@@ -188,6 +154,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
 export function useGame() {
   const context = useContext(GameContext);
-  if (!context) throw new Error('useGame must be used within GameProvider');
+  if (!context) {
+    throw new Error('useGame must be used within GameProvider');
+  }
   return context;
 }

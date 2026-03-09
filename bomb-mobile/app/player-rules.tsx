@@ -56,7 +56,7 @@ export default function PlayerRulesScreen() {
             <Text style={styles.ruleText}>{assignedRule}</Text>
           ) : (
             <>
-              <Text style={styles.cardTitle}>YOU'RE ALONE IN A ROOM WITH A BOMB.</Text>
+              <Text style={styles.cardTitle}>{"YOU'RE ALONE IN A ROOM WITH A BOMB."}</Text>
               <Text style={styles.cardSubtitle}>Play your part in helping defuse it.</Text>
               <Text style={styles.hint}>HOLD TO REVEAL</Text>
             </>

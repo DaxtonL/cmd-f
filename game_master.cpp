@@ -4,7 +4,7 @@
 
 namespace {
 bomb make_bomb() {
-    return bomb(5, 3, 4);
+    return bomb(6, 3, 4);
 }
 }
 
